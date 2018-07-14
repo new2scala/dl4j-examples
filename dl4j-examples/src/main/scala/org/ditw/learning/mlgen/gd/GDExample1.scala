@@ -122,7 +122,7 @@ object GDExample1 extends App {
 
         val paramTr = params.map(p => f"$p%.5f").mkString(",")
 
-        val err = error(params, bxs, bys)
+        val err = error(params, xs, ys)
         println(
           f"$paramTr:\t $err%.5f"
         )
@@ -187,7 +187,7 @@ object GDExample1 extends App {
   }
 
   var initParams = Array(0.0, 0.0, 0.0)
-  fitMiniBatch(initParams, xs.toArray, ys.toArray, 0.000001, 500, 16)
+  fitMiniBatch(initParams, xs.toArray, ys.toArray, 0.000005, 500, 16)
   initParams = Array(0.0, 0.0, 0.0)
   fit_sgd(initParams, xs.toArray, ys.toArray, 0.00001, 500)
   initParams = Array(0.0, 0.0, 0.0)
