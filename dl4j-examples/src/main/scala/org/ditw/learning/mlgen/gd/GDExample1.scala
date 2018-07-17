@@ -132,6 +132,45 @@ object GDExample1 extends App {
     }
   }
 
+  def fitMiniBatch_Momentum(
+                    initParams:Array[Double],
+                    xs:Array[Double],
+                    ys:Array[Double],
+                    learningRate:Double,
+                    momentum:Double,
+                    epochs:Int,
+                    miniBatchSize:Int = 32
+                    //gd:(Array[Double], Array[Double], Array[Double]) => Array[Double]
+                  ):Unit = {
+    var params = util.Arrays.copyOf(initParams, initParams.length)
+
+    val momentumV = Array(0.0, 0.0, 0.0)
+    (0 until epochs).foreach { ep =>
+
+      shuffle(xs.length, xs, ys)
+
+      val batches = break2Batches(miniBatchSize, xs.length, xs, ys)
+      batches.foreach { batch =>
+        val bxs = batch(0)
+        val bys = batch(1)
+        val gdr = gdBatch(params, bxs, bys)
+        params = params.indices.map { idx =>
+          momentumV(idx) = momentum*momentumV(idx) + learningRate * gdr(idx)
+          params(idx) - momentumV(idx)
+        }.toArray
+
+        val paramTr = params.map(p => f"$p%.5f").mkString(",")
+
+        val err = error(params, xs, ys)
+        println(
+          f"$paramTr:\t $err%.5f"
+        )
+      }
+
+      println(s"epoch: $ep")
+    }
+  }
+
   def fit(
            initParams:Array[Double],
            xs:Array[Double],
@@ -187,11 +226,13 @@ object GDExample1 extends App {
   }
 
   var initParams = Array(0.0, 0.0, 0.0)
-  fitMiniBatch(initParams, xs.toArray, ys.toArray, 0.000005, 500, 16)
+  fitMiniBatch_Momentum(initParams, xs.toArray, ys.toArray, 0.000006, 0.9,10000, 16)
   initParams = Array(0.0, 0.0, 0.0)
-  fit_sgd(initParams, xs.toArray, ys.toArray, 0.00001, 500)
+  fitMiniBatch(initParams, xs.toArray, ys.toArray, 0.00001, 10000, 16)
+//  initParams = Array(0.0, 0.0, 0.0)
+//  fit_sgd(initParams, xs.toArray, ys.toArray, 0.00001, 500)
   initParams = Array(0.0, 0.0, 0.0)
-  fit(initParams, xs.toArray, ys.toArray, 0.00001, 500, gdBatch)
+  fit(initParams, xs.toArray, ys.toArray, 0.00001, 10000, gdBatch)
   println("ok")
 
 }
