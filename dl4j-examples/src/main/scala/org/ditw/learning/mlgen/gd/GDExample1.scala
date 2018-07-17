@@ -1,7 +1,11 @@
 package org.ditw.learning.mlgen.gd
 
+import java.io.FileOutputStream
+import java.nio.charset.StandardCharsets
 import java.util
 import java.util.Random
+
+import org.apache.commons.io.IOUtils
 
 import scala.collection.mutable.ListBuffer
 
@@ -104,15 +108,17 @@ object GDExample1 extends App {
     epochs:Int,
     miniBatchSize:Int = 32
     //gd:(Array[Double], Array[Double], Array[Double]) => Array[Double]
-  ):Unit = {
+  ):Array[Array[Double]] = {
     var params = util.Arrays.copyOf(initParams, initParams.length)
+    val traceRes = ListBuffer[Array[Double]]()
 
     (0 until epochs).foreach { ep =>
 
       shuffle(xs.length, xs, ys)
 
       val batches = break2Batches(miniBatchSize, xs.length, xs, ys)
-      batches.foreach { batch =>
+      batches.indices.foreach { idx =>
+        val batch = batches(idx)
         val bxs = batch(0)
         val bys = batch(1)
         val gdr = gdBatch(params, bxs, bys)
@@ -120,16 +126,23 @@ object GDExample1 extends App {
           params(idx) - learningRate * gdr(idx)
         }.toArray
 
-        val paramTr = params.map(p => f"$p%.5f").mkString(",")
+        traceRes += gdr.map(_*learningRate)
 
-        val err = error(params, xs, ys)
-        println(
-          f"$paramTr:\t $err%.5f"
-        )
+        if (idx == 0) {
+          val paramTr = params.map(p => f"$p%.4f").mkString(",")
+          val gdrTr = gdr.map(p => f"${p*learningRate}%.6f").mkString(",")
+
+          val err = error(params, xs, ys)
+          println(
+            f"$paramTr ($gdrTr):\t $err%.5f"
+          )
+        }
       }
 
       println(s"epoch: $ep")
     }
+
+    traceRes.toArray
   }
 
   def fitMiniBatch_Momentum(
@@ -141,8 +154,9 @@ object GDExample1 extends App {
                     epochs:Int,
                     miniBatchSize:Int = 32
                     //gd:(Array[Double], Array[Double], Array[Double]) => Array[Double]
-                  ):Unit = {
+                  ):Array[Array[Double]] = {
     var params = util.Arrays.copyOf(initParams, initParams.length)
+    val traceRes = ListBuffer[Array[Double]]()
 
     val momentumV = Array(0.0, 0.0, 0.0)
     (0 until epochs).foreach { ep =>
@@ -150,7 +164,8 @@ object GDExample1 extends App {
       shuffle(xs.length, xs, ys)
 
       val batches = break2Batches(miniBatchSize, xs.length, xs, ys)
-      batches.foreach { batch =>
+      batches.indices.foreach { idx =>
+        val batch = batches(idx)
         val bxs = batch(0)
         val bys = batch(1)
         val gdr = gdBatch(params, bxs, bys)
@@ -159,16 +174,23 @@ object GDExample1 extends App {
           params(idx) - momentumV(idx)
         }.toArray
 
-        val paramTr = params.map(p => f"$p%.5f").mkString(",")
+        traceRes += util.Arrays.copyOf(momentumV, momentumV.length)
 
-        val err = error(params, xs, ys)
-        println(
-          f"$paramTr:\t $err%.5f"
-        )
+        if (idx == 0) {
+          val paramTr = params.map(p => f"$p%.4f").mkString(",")
+          val momentumTr = momentumV.map(p => f"$p%.6f").mkString(",")
+
+          val err = error(params, xs, ys)
+          println(
+            f"$paramTr ($momentumTr):\t $err%.5f"
+          )
+        }
       }
 
       println(s"epoch: $ep")
     }
+
+    traceRes.toArray
   }
 
   def fit(
@@ -226,9 +248,13 @@ object GDExample1 extends App {
   }
 
   var initParams = Array(0.0, 0.0, 0.0)
-  fitMiniBatch_Momentum(initParams, xs.toArray, ys.toArray, 0.000006, 0.9,10000, 16)
+  var traceD = fitMiniBatch_Momentum(initParams, xs.toArray, ys.toArray, 0.000006, 0.9,10000, 16)
+  var outStr = traceD.map(_.mkString(",")).mkString("X,Y,Z\n","\n", "")
+  IOUtils.write(outStr, new FileOutputStream("/media/sf_vmshare/tr1.csv"), StandardCharsets.UTF_8)
   initParams = Array(0.0, 0.0, 0.0)
-  fitMiniBatch(initParams, xs.toArray, ys.toArray, 0.00001, 10000, 16)
+  traceD = fitMiniBatch(initParams, xs.toArray, ys.toArray, 0.00001, 10000, 16)
+  outStr = traceD.map(_.mkString(",")).mkString("X,Y,Z\n","\n", "")
+  IOUtils.write(outStr, new FileOutputStream("/media/sf_vmshare/tr2.csv"), StandardCharsets.UTF_8)
 //  initParams = Array(0.0, 0.0, 0.0)
 //  fit_sgd(initParams, xs.toArray, ys.toArray, 0.00001, 500)
   initParams = Array(0.0, 0.0, 0.0)
