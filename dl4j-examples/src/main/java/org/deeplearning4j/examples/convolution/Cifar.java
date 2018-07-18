@@ -63,7 +63,7 @@ public class Cifar {
     private static int freIterations = 50;
     private static int seed = 123;
     private static boolean preProcessCifar = false;//use Zagoruyko's preprocess for Cifar
-    private static int epochs = 50;
+    private static int epochs = 1;
 
     public static void main(String[] args) throws Exception {
         // CudaEnvironment.getInstance().getConfiguration().;
@@ -71,9 +71,9 @@ public class Cifar {
         Cifar cf = new Cifar();
         //train model and eval model
         MultiLayerNetwork model = cf.trainModelByCifarWithNet();//ignore
-        UIServer uiServer = UIServer.getInstance();
+        //UIServer uiServer = UIServer.getInstance();
         StatsStorage statsStorage = new InMemoryStatsStorage();
-        uiServer.attach(statsStorage);
+        //uiServer.attach(statsStorage);
         model.setListeners(new StatsListener( statsStorage),new ScoreIterationListener(freIterations));
 
         CifarDataSetIterator cifar = new CifarDataSetIterator(batchSize, numSamples,
