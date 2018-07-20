@@ -12,7 +12,7 @@ import org.nd4j.linalg.dataset.DataSet
 import org.nd4j.linalg.dataset.api.DataSetPreProcessor
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator
 import org.nd4j.linalg.factory.Nd4j
-import org.nd4j.linalg.learning.config.RmsProp
+import org.nd4j.linalg.learning.config.{Nesterovs, RmsProp}
 import org.nd4j.linalg.lossfunctions.LossFunctions.LossFunction
 
 object Lstm1 extends App {
@@ -62,14 +62,14 @@ object Lstm1 extends App {
     override def cursor(): Int = currIdx
   }
 
-  val lstmSize = 20
+  val lstmSize = 10
   val lookBack = 1
 
   val conf = new NeuralNetConfiguration.Builder()
     .seed(1234)
     .l2(0.001)
     .weightInit(WeightInit.XAVIER)
-    .updater(new RmsProp(0.01))
+    .updater(new Nesterovs(0.01))
     .list()
     .layer(0,
       new LSTM.Builder()
@@ -85,9 +85,9 @@ object Lstm1 extends App {
         .nOut(1)
         .build()
     )
-    .backpropType(BackpropType.TruncatedBPTT)
-    .tBPTTBackwardLength(lookBack)
-    .tBPTTForwardLength(2)
+//    .backpropType(BackpropType.TruncatedBPTT)
+//    .tBPTTBackwardLength(lookBack)
+//    .tBPTTForwardLength(1)
     .pretrain(false)
     .backprop(true)
     .build()
@@ -95,14 +95,14 @@ object Lstm1 extends App {
   val net = new MultiLayerNetwork(conf)
 
   net.init()
-  net.setListeners(new ScoreIterationListener(5))
+  net.setListeners(new ScoreIterationListener(50))
 
   net.getLayers.foreach { l =>
     val nParams = l.numParams()
     println(s"Param # at layer ${l.getIndex}: $nParams")
   }
 
-  val epochs = 100
+  val epochs = 500
 
   (0 until epochs).foreach { ep =>
     while (dataIter.hasNext) {
@@ -119,18 +119,18 @@ object Lstm1 extends App {
   val initInput = Nd4j.zeros(samples, 1, lookBack)
   (0 until lookBack).foreach { i =>
     (0 until samples).foreach { j =>
-      initInput.putScalar(Array(j, 0, i), data(data.length-lookBack+i))
+      initInput.putScalar(Array(j, 0, i), 0.5)
     }
   }
   var output = net.rnnTimeStep(initInput)
   output = output.tensorAlongDimension(output.size(2)-1, 1, 0)
 
-  (0 until 100).foreach { _ =>
+  (0 until 100).foreach { idx =>
     val nextInput = Nd4j.zeros(1, 1, 1)
-    val o = output.getDouble(0, 0)
-    nextInput.putScalar(Array(0, 0, 0), o)
+    nextInput.putScalar(Array(0, 0, 0), idx*0.01)
     output = net.rnnTimeStep(nextInput)
     output = output.tensorAlongDimension(output.size(2)-1, 1, 0)
+    val o = output.getDouble(0, 0)
     println(o)
   }
 
