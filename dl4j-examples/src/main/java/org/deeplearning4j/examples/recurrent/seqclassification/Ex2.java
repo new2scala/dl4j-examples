@@ -37,26 +37,34 @@ public class Ex2 {
     private static final Logger log = LoggerFactory.getLogger(UCISequenceClassificationExample.class);
 
     //'baseDir': Base directory for the data. Change this if you want to save the data somewhere else
-    private static File baseDir = new File("src/main/resources/uci/");
+    private static File baseDir = new File("/home/dev/tmp/lstm1/");
     private static File baseTrainDir = new File(baseDir, "train");
-    private static File featuresDirTrain = new File(baseTrainDir, "features");
-    private static File labelsDirTrain = new File(baseTrainDir, "labels");
+    private static File featuresDirTrain = new File(baseTrainDir, "mm");
+    private static File labelsDirTrain = new File(baseTrainDir, "lb");
     private static File baseTestDir = new File(baseDir, "test");
-    private static File featuresDirTest = new File(baseTestDir, "features");
-    private static File labelsDirTest = new File(baseTestDir, "labels");
+    private static File featuresDirTest = new File(baseTestDir, "mm");
+    private static File labelsDirTest = new File(baseTestDir, "lb");
 
     public static void main(String[] args) throws Exception {
         downloadUCIData();
 
         // ----- Load the training data -----
         //Note that we have 450 training files for features: train/features/0.csv through train/features/449.csv
+        int maxFileIndex = 4499;
+        String csvFileNameFmt = "%04d.csv";
         SequenceRecordReader trainFeatures = new CSVSequenceRecordReader();
-        trainFeatures.initialize(new NumberedFileInputSplit(featuresDirTrain.getAbsolutePath() + "/%d.csv", 0, 449));
+        trainFeatures.initialize(new NumberedFileInputSplit(
+            featuresDirTrain.getAbsolutePath() + "/" + csvFileNameFmt,
+            0, maxFileIndex
+        ));
         SequenceRecordReader trainLabels = new CSVSequenceRecordReader();
-        trainLabels.initialize(new NumberedFileInputSplit(labelsDirTrain.getAbsolutePath() + "/%d.csv", 0, 449));
+        trainLabels.initialize(new NumberedFileInputSplit(
+            labelsDirTrain.getAbsolutePath() + "/" + csvFileNameFmt,
+            0, maxFileIndex
+        ));
 
         int miniBatchSize = 10;
-        int numLabelClasses = 6;
+        int numLabelClasses = 9;
         DataSetIterator trainData = new SequenceRecordReaderDataSetIterator(trainFeatures, trainLabels, miniBatchSize, numLabelClasses,
             false, SequenceRecordReaderDataSetIterator.AlignmentMode.ALIGN_END);
 
@@ -74,10 +82,15 @@ public class Ex2 {
 
         // ----- Load the test data -----
         //Same process as for the training data.
+        int testFileMaxIndex = 1499;
         SequenceRecordReader testFeatures = new CSVSequenceRecordReader();
-        testFeatures.initialize(new NumberedFileInputSplit(featuresDirTest.getAbsolutePath() + "/%d.csv", 0, 149));
+        testFeatures.initialize(new NumberedFileInputSplit(featuresDirTest.getAbsolutePath() + "/" + csvFileNameFmt,
+            0, testFileMaxIndex
+        ));
         SequenceRecordReader testLabels = new CSVSequenceRecordReader();
-        testLabels.initialize(new NumberedFileInputSplit(labelsDirTest.getAbsolutePath() + "/%d.csv", 0, 149));
+        testLabels.initialize(new NumberedFileInputSplit(labelsDirTest.getAbsolutePath() + "/" + csvFileNameFmt,
+            0, testFileMaxIndex
+        ));
 
         DataSetIterator testData = new SequenceRecordReaderDataSetIterator(testFeatures, testLabels, miniBatchSize, numLabelClasses,
             false, SequenceRecordReaderDataSetIterator.AlignmentMode.ALIGN_END);
@@ -85,6 +98,7 @@ public class Ex2 {
         testData.setPreProcessor(normalizer);   //Note that we are using the exact same normalization process as the training data
 
 
+        int lstmLayerNodes = 50;
         // ----- Configure the network -----
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
             .seed(123)    //Random number generator seed for improved repeatability. Optional.
@@ -93,9 +107,10 @@ public class Ex2 {
             .gradientNormalization(GradientNormalization.ClipElementWiseAbsoluteValue)  //Not always required, but helps with this data set
             .gradientNormalizationThreshold(0.5)
             .list()
-            .layer(0, new LSTM.Builder().activation(Activation.TANH).nIn(1).nOut(10).build())
-            .layer(1, new RnnOutputLayer.Builder(LossFunctions.LossFunction.MCXENT)
-                .activation(Activation.SOFTMAX).nIn(10).nOut(numLabelClasses).build())
+            .layer(0, new LSTM.Builder().activation(Activation.TANH).nIn(4).nOut(lstmLayerNodes).build())
+            .layer(1, new LSTM.Builder().activation(Activation.TANH).nIn(lstmLayerNodes).nOut(lstmLayerNodes).build())
+            .layer(2, new RnnOutputLayer.Builder(LossFunctions.LossFunction.MCXENT)
+                .activation(Activation.SOFTMAX).nIn(lstmLayerNodes).nOut(numLabelClasses).build())
             .pretrain(false).backprop(true).build();
 
         MultiLayerNetwork net = new MultiLayerNetwork(conf);
