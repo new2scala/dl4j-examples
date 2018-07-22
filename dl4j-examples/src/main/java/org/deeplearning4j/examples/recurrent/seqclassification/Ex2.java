@@ -16,12 +16,14 @@ import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
 import org.nd4j.linalg.activations.Activation;
+import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.api.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.dataset.api.preprocessor.DataNormalization;
 import org.nd4j.linalg.dataset.api.preprocessor.NormalizerStandardize;
 import org.nd4j.linalg.learning.config.Nesterovs;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
+import org.nd4j.linalg.ops.transforms.Transforms;
 import org.nd4j.linalg.primitives.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,14 +46,52 @@ public class Ex2 {
     private static File baseTestDir = new File(baseDir, "test");
     private static File featuresDirTest = new File(baseTestDir, "mm");
     private static File labelsDirTest = new File(baseTestDir, "lb");
+    private static File baseT2Dir = new File(baseDir, "t2");
+    private static File featuresDirT2 = new File(baseT2Dir, "mm");
+    private static File labelsDirT2 = new File(baseT2Dir, "lb");
 
     public static void main(String[] args) throws Exception {
-        downloadUCIData();
+        String modelSavePath = "/home/dev/tmp/lstm1/model";
+        //trainAndSaveModel(modelSavePath);
+        loadModelAndTest(modelSavePath);
+    }
+
+    private static void loadModelAndTest(String modelSavePath) throws Exception {
+        MultiLayerNetwork net = MultiLayerNetwork.load(new File(modelSavePath), false);
+
+        int maxFileIndex = 19;
+        SequenceRecordReader t2Features = new CSVSequenceRecordReader();
+        t2Features.initialize(new NumberedFileInputSplit(
+            featuresDirT2.getAbsolutePath() + "/" + csvFileNameFmt,
+            0, maxFileIndex
+        ));
+        SequenceRecordReader t2Labels = new CSVSequenceRecordReader();
+        t2Labels.initialize(new NumberedFileInputSplit(
+            labelsDirT2.getAbsolutePath() + "/" + csvFileNameFmt,
+            0, maxFileIndex
+        ));
+
+        DataSetIterator t2Data = new SequenceRecordReaderDataSetIterator(t2Features, t2Labels, miniBatchSize, numLabelClasses,
+            false, SequenceRecordReaderDataSetIterator.AlignmentMode.ALIGN_END);
+
+        while (t2Data.hasNext()) {
+            DataSet ds = t2Data.next();
+            INDArray res = net.rnnTimeStep(ds.getFeatures());
+            INDArray roundRes = Transforms.round(res);
+            System.out.println(roundRes.shape());
+        }
+        //
+    }
+    private static final String csvFileNameFmt = "%04d.csv";
+    private static final int miniBatchSize = 10;
+    private static final int numLabelClasses = 9;
+
+
+    private static void trainAndSaveModel(String modelSavePath) throws Exception {
 
         // ----- Load the training data -----
         //Note that we have 450 training files for features: train/features/0.csv through train/features/449.csv
         int maxFileIndex = 4499;
-        String csvFileNameFmt = "%04d.csv";
         SequenceRecordReader trainFeatures = new CSVSequenceRecordReader();
         trainFeatures.initialize(new NumberedFileInputSplit(
             featuresDirTrain.getAbsolutePath() + "/" + csvFileNameFmt,
@@ -63,13 +103,12 @@ public class Ex2 {
             0, maxFileIndex
         ));
 
-        int miniBatchSize = 10;
-        int numLabelClasses = 9;
+
         DataSetIterator trainData = new SequenceRecordReaderDataSetIterator(trainFeatures, trainLabels, miniBatchSize, numLabelClasses,
             false, SequenceRecordReaderDataSetIterator.AlignmentMode.ALIGN_END);
 
-        DataSet dbg = ((SequenceRecordReaderDataSetIterator) trainData).next();
-        System.out.println(dbg);
+//        DataSet dbg = ((SequenceRecordReaderDataSetIterator) trainData).next();
+//        System.out.println(dbg);
 
         //Normalize the training data
         DataNormalization normalizer = new NormalizerStandardize();
@@ -104,8 +143,8 @@ public class Ex2 {
             .seed(123)    //Random number generator seed for improved repeatability. Optional.
             .weightInit(WeightInit.XAVIER)
             .updater(new Nesterovs(0.005))
-            .gradientNormalization(GradientNormalization.ClipElementWiseAbsoluteValue)  //Not always required, but helps with this data set
-            .gradientNormalizationThreshold(0.5)
+//            .gradientNormalization(GradientNormalization.ClipElementWiseAbsoluteValue)  //Not always required, but helps with this data set
+//            .gradientNormalizationThreshold(0.5)
             .list()
             .layer(0, new LSTM.Builder().activation(Activation.TANH).nIn(4).nOut(lstmLayerNodes).build())
             .layer(1, new LSTM.Builder().activation(Activation.TANH).nIn(lstmLayerNodes).nOut(lstmLayerNodes).build())
@@ -120,8 +159,8 @@ public class Ex2 {
 
 
         // ----- Train the network, evaluating the test set performance at each epoch -----
-        int nEpochs = 40;
-        String str = "Test set evaluation at epoch %d: Accuracy = %.2f, F1 = %.2f";
+        int nEpochs = 50;
+        String str = "Test set evaluation at epoch %d: Accuracy = %.3f, F1 = %.3f";
         for (int i = 0; i < nEpochs; i++) {
             net.fit(trainData);
 
@@ -133,60 +172,11 @@ public class Ex2 {
             trainData.reset();
         }
 
+
+        net.save(new File(modelSavePath));
+
         log.info("----- Example Complete -----");
     }
 
 
-    //This method downloads the data, and converts the "one time series per line" format into a suitable
-    //CSV sequence format that DataVec (CsvSequenceRecordReader) and DL4J can read.
-    private static void downloadUCIData() throws Exception {
-        if (baseDir.exists()) return;    //Data already exists, don't download it again
-
-        String url = "https://archive.ics.uci.edu/ml/machine-learning-databases/synthetic_control-mld/synthetic_control.data";
-        String data = IOUtils.toString(new URL(url));
-
-        String[] lines = data.split("\n");
-
-        //Create directories
-        baseDir.mkdir();
-        baseTrainDir.mkdir();
-        featuresDirTrain.mkdir();
-        labelsDirTrain.mkdir();
-        baseTestDir.mkdir();
-        featuresDirTest.mkdir();
-        labelsDirTest.mkdir();
-
-        int lineCount = 0;
-        List<Pair<String, Integer>> contentAndLabels = new ArrayList<>();
-        for (String line : lines) {
-            String transposed = line.replaceAll(" +", "\n");
-
-            //Labels: first 100 examples (lines) are label 0, second 100 examples are label 1, and so on
-            contentAndLabels.add(new Pair<>(transposed, lineCount++ / 100));
-        }
-
-        //Randomize and do a train/test split:
-        Collections.shuffle(contentAndLabels, new Random(12345));
-
-        int nTrain = 450;   //75% train, 25% test
-        int trainCount = 0;
-        int testCount = 0;
-        for (Pair<String, Integer> p : contentAndLabels) {
-            //Write output in a format we can read, in the appropriate locations
-            File outPathFeatures;
-            File outPathLabels;
-            if (trainCount < nTrain) {
-                outPathFeatures = new File(featuresDirTrain, trainCount + ".csv");
-                outPathLabels = new File(labelsDirTrain, trainCount + ".csv");
-                trainCount++;
-            } else {
-                outPathFeatures = new File(featuresDirTest, testCount + ".csv");
-                outPathLabels = new File(labelsDirTest, testCount + ".csv");
-                testCount++;
-            }
-
-            FileUtils.writeStringToFile(outPathFeatures, p.getFirst());
-            FileUtils.writeStringToFile(outPathLabels, p.getSecond().toString());
-        }
-    }
 }

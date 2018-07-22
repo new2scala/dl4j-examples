@@ -40,6 +40,7 @@ object DataGenTest extends App {
 
   val lookback = 1
   val steps = 30
-  genData2Files(steps, lookback, "/home/dev/tmp/lstm1/train", 4500)
-  genData2Files(steps, lookback, "/home/dev/tmp/lstm1/test", 1500)
+//  genData2Files(steps, lookback, "/home/dev/tmp/lstm1/train", 4500)
+//  genData2Files(steps, lookback, "/home/dev/tmp/lstm1/test", 1500)
+  genData2Files(steps, lookback, "/home/dev/tmp/lstm1/t2", 20)
 }
