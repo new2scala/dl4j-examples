@@ -52,8 +52,8 @@ public class Ex2 {
 
     public static void main(String[] args) throws Exception {
         String modelSavePath = "/home/dev/tmp/lstm1/model";
-        //trainAndSaveModel(modelSavePath);
-        loadModelAndTest(modelSavePath);
+        trainAndSaveModel(modelSavePath);
+        //loadModelAndTest(modelSavePath);
     }
 
     private static void loadModelAndTest(String modelSavePath) throws Exception {

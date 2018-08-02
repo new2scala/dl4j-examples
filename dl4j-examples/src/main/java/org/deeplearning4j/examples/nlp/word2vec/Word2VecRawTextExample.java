@@ -44,7 +44,7 @@ public class Word2VecRawTextExample {
         log.info("Building model....");
         Word2Vec vec = new Word2Vec.Builder()
                 .minWordFrequency(5)
-                .iterations(1)
+                .iterations(10)
                 .layerSize(100)
                 .seed(42)
                 .windowSize(5)
