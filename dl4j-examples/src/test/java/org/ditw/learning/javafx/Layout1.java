@@ -6,6 +6,8 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Hyperlink;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.CycleMethod;
@@ -27,8 +29,33 @@ public class Layout1 extends Application {
         bp.setTop(hb);
         bp.setLeft(vbox());
 
+        bp.setCenter(grid());
+
         primaryStage.setScene(new Scene(bp));
         primaryStage.show();
+    }
+
+    private GridPane grid() {
+        GridPane gp = new GridPane();
+
+        gp.setHgap(10);
+        gp.setVgap(10);
+
+        gp.setPadding(new Insets(0, 10, 0, 10));
+
+        Text cat = new Text("Current Year");
+        cat.setFont(Font.font("Arial", FontWeight.BOLD, 20));
+        gp.add(cat, 1, 0);
+
+        Text chartTitle = new Text("Goods and Service");
+        gp.add(chartTitle, 1, 1, 2, 1);
+
+        ImageView img = new ImageView(
+            new Image("file:///media/sf_vmshare/lena.png")
+        );
+        gp.add(img, 0, 0, 1, 2);
+
+        return gp;
     }
 
     private void addStackPane2HBox(HBox hbox) {
@@ -40,7 +67,7 @@ public class Layout1 extends Application {
                 new Stop[] {
                     new Stop(0, Color.BLUE),
                     new Stop(0.5, Color.WHITE),
-                    new Stop(1, Color.CYAN)
+                    new Stop(1, Color.BLUE)
                 }
             )
         );
