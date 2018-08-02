@@ -45,7 +45,7 @@ public class W2VAffs {
             log.info("Building model....");
             vec = new Word2Vec.Builder()
                 .minWordFrequency(5)
-                .iterations(20)
+                .iterations(50)
                 .layerSize(64)
                 .seed(1234)
                 .windowSize(5)
