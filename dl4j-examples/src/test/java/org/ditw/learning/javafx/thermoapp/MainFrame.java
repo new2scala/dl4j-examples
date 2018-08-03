@@ -42,8 +42,6 @@ public class MainFrame extends Application {
         primaryStage.show();
     }
 
-    private static String _AuthUrl = "https://login.live.com/oauth20_authorize.srf?client_id=dcfbb7e5-d75f-4726-9201-bb35a438ef9b&scope=files.read&response_type=token&redirect_uri=https://login.live.com/oauth20_desktop.srf";
-    private static URI uri = URI.create(_AuthUrl);
     private BorderPane layout() {
         BorderPane bp = new BorderPane();
 
@@ -51,66 +49,7 @@ public class MainFrame extends Application {
         bp.setRight(image());
         bp.setLeft(thermoGrid());
 
-        WebView w = new WebView();
-
-//        CookieManager cm = new CookieManager();
-//        cm.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
-//        java.net.CookieHandler.setDefault(cm);
-
-//        try {
-//
-//            Map<String, List<String>> headers = new LinkedHashMap<>();
-//            Map<String, List<String>> cookies = java.net.CookieHandler.getDefault().get(uri, headers);
-//            //List<HttpCookie> cookies = manager.getCookieStore().get(uri);
-//            //System.out.println("cookies: " + cookies.size());
-//            //List<String> cookieStrs = new ArrayList<>(cookies.size());
-//            for (String k : cookies.keySet()) {
-//                System.out.println(String.format("\t%s(%d)", cookies.get(k).get(0), cookies.get(k).size()));
-//
-//                //cookieStrs.add(cookies.get(k).get(0));
-////                cookieStrs.add()
-//            }
-////            headers.put("Set-Cookie", cookieStrs);
-//
-//        }
-//        catch (Exception ex) {
-//            System.out.println("failed to setup cookie handler: " + ex.getMessage());
-//        }
-        //headers.put("Set-Cookie", Arrays.asList("name=value"));
-
-
-        w.getEngine().getLoadWorker().stateProperty().addListener(
-            new ChangeListener<Worker.State>() {
-                @Override
-                public void changed(ObservableValue<? extends Worker.State> observable, Worker.State oldValue, Worker.State newValue) {
-                    try {
-                        if (newValue == Worker.State.SUCCEEDED) {
-                            Map<String, List<String>> headers = new LinkedHashMap<>();
-                            //java.net.CookieManager manager = new java.net.CookieManager();
-                            Map<String, List<String>> cookies = java.net.CookieHandler.getDefault().get(uri, headers);
-
-                            //cm.getCookieStore().get(uri);
-                            //List<HttpCookie> cookies = manager.getCookieStore().get(uri);
-                            System.out.println("cookies: " + cookies.size());
-                            for (String k : cookies.keySet()) {
-                                System.out.println(String.format("\t%s: %s(%d)", k, cookies.get(k).get(0), cookies.get(k).size()));
-                            }
-
-                            System.out.println("Current location: " + w.getEngine().getLocation());
-                            //java.net.CookieHandler.getDefault().put(uri, cookies);
-                        }
-                    }
-                    catch (Exception ex) {
-                        System.out.println("failed to setup cookie handler: " + ex.getMessage());
-                    }
-
-                }
-            }
-        );
-        w.getEngine().load(_AuthUrl);
-
-
-        bp.setCenter(w);
+        bp.setCenter(AuthHelper.createWebClient());
         return bp;
     }
 
@@ -164,6 +103,10 @@ public class MainFrame extends Application {
     private HBox controlBar() {
 
         Button loadButton = new Button("Open");
+
+        loadButton.setOnAction(evt -> {
+            OneDriveHelpers.testToken();
+        });
         Slider slider = new Slider();
         slider.setMin(0);
         slider.setMax(100);

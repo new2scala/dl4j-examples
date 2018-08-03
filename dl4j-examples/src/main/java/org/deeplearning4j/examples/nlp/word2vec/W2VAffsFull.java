@@ -2,6 +2,7 @@ package org.deeplearning4j.examples.nlp.word2vec;
 
 import org.deeplearning4j.models.embeddings.loader.WordVectorSerializer;
 import org.deeplearning4j.models.word2vec.Word2Vec;
+import org.deeplearning4j.text.sentenceiterator.BasicLineIterator;
 import org.deeplearning4j.text.sentenceiterator.FileSentenceIterator;
 import org.deeplearning4j.text.sentenceiterator.SentenceIterator;
 import org.deeplearning4j.text.tokenization.tokenizer.preprocessor.CommonPreprocessor;
@@ -19,9 +20,10 @@ public final class W2VAffsFull {
 
     private static Logger log = LoggerFactory.getLogger(W2VAffsFull.class);
 
-    private static void trainOnce(Word2Vec w2v, File trainingDataPath, String modelFile) {
+    private static void trainOnce(Word2Vec w2v, File trainingDataPath, int epochs) throws Exception {
         // Strip white space before and after for each line
         SentenceIterator iter = new FileSentenceIterator(trainingDataPath);
+        //SentenceIterator iter = new BasicLineIterator(trainingDataPath);
 
         // Split on white spaces in the line to get words
         TokenizerFactory t = new DefaultTokenizerFactory();
@@ -35,12 +37,14 @@ public final class W2VAffsFull {
 
         w2v.setTokenizerFactory(t);
         w2v.setSentenceIterator(iter);
+        w2v.getConfiguration().setEpochs(epochs);
+        //w2v.getConfiguration().setIterations(iterations);
 
         log.info("Fitting Word2Vec model....");
         w2v.fit();
-
-        log.info("Writing word vectors to text file....");
-        WordVectorSerializer.writeWord2VecModel(w2v, modelFile);
+//
+//        log.info("Writing word vectors to text file....");
+//        WordVectorSerializer.writeWord2VecModel(w2v, modelFile);
 
     }
 
@@ -68,6 +72,7 @@ public final class W2VAffsFull {
             vec = new Word2Vec.Builder()
                 .minWordFrequency(5)
                 .iterations(1)
+                .epochs(1)
                 .layerSize(64)
                 .seed(1234)
                 .windowSize(5)
@@ -78,10 +83,11 @@ public final class W2VAffsFull {
             vec = WordVectorSerializer.readWord2VecModel(modelFile);
         }
 
-        int iterCount = 0;
+        int round = 0;
         while (true) {
-            log.info("------------Training iteration {}", iterCount++);
-            trainOnce(vec, trainingDataPath, modelFile);
+
+            log.info("------------Training round {}", round++);
+            trainOnce(vec, trainingDataPath, 1);
             evaluateSamples(vec);
             log.info("Writing word vectors to text file....");
             WordVectorSerializer.writeWord2VecModel(vec, modelFile);

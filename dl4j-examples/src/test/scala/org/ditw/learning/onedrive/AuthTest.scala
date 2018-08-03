@@ -2,6 +2,7 @@ package org.ditw.learning.onedrive
 
 import java.nio.charset.StandardCharsets
 
+import org.apache.http.HttpHeaders
 import org.apache.http.client.config.{CookieSpecs, RequestConfig}
 import org.apache.http.client.protocol.HttpClientContext
 import org.apache.http.impl.client.{HttpClients, LaxRedirectStrategy}
@@ -16,6 +17,7 @@ object AuthTest extends App {
   import org.apache.http.client.methods.HttpGet
 
   val httpget = new HttpGet(req)
+
 
   import org.apache.http.impl.client.DefaultHttpClient
 
