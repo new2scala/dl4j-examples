@@ -72,7 +72,7 @@ public final class W2VAffsFull {
 
         Word2Vec vec;
         int epochs = 1;
-        int vecSize = 64;
+        int vecSize = 256;
         if (!mf.exists()) {
 
             // manual creation of VocabCache and WeightLookupTable usually isn't necessary
@@ -103,11 +103,13 @@ public final class W2VAffsFull {
         int round = 0;
         while (true) {
 
-            log.info("------------Training round {}", round++);
+            log.info("------------Uptraining round {}", round++);
             trainOnce(vec, trainingDataPath, epochs);
             evaluateSamples(vec);
             log.info("Writing word vectors to text file....");
             WordVectorSerializer.writeWord2VecModel(vec, modelFile);
+
+            vec = WordVectorSerializer.readWord2VecModel(modelFile);
         }
 
 

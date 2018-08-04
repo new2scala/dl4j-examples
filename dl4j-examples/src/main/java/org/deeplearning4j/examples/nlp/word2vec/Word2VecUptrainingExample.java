@@ -16,7 +16,9 @@ import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * This is simple example for model weights update after initial vocab building.
@@ -36,10 +38,11 @@ public class Word2VecUptrainingExample {
         /*
                 Initial model training phase
          */
-        String filePath = new ClassPathResource("raw_sentences.txt").getFile().getAbsolutePath();
+        //String filePath = new ClassPathResource("raw_sentences.txt").getFile().getAbsolutePath();
 
         log.info("Load & Vectorize Sentences....");
         // Strip white space before and after for each line
+        String filePath = "/media/sf_vmshare/aff-w2v/part-00000";
         SentenceIterator iter = new BasicLineIterator(filePath);
         // Split on white spaces in the line to get words
         TokenizerFactory t = new DefaultTokenizerFactory();
@@ -71,9 +74,7 @@ public class Word2VecUptrainingExample {
         vec.fit();
 
 
-        Collection<String> lst = vec.wordsNearest("day", 10);
-        log.info("Closest words to 'day' on 1st run: " + lst);
-
+        evaluateSamples(vec);
         /*
             at this moment we're supposed to have model built, and it can be saved for future use.
          */
@@ -100,11 +101,19 @@ public class Word2VecUptrainingExample {
 
         word2Vec.fit();
 
-        lst = word2Vec.wordsNearestSum("day", 10);
-        log.info("Closest words to 'day' on 2nd run: " + lst);
+        evaluateSamples(word2Vec);
 
         /*
             Model can be saved for future use now
          */
+    }
+
+    private static void evaluateSamples(Word2Vec w2v) {
+        List<String> words = Arrays.asList("Department", "Institute", "Laboratory", "Germany", "USA", "TN");
+
+        for (String w : words) {
+            Collection<String> lst = w2v.wordsNearestSum(w.toLowerCase(), 10);
+            log.info("10 Words closest to '{}': {}", w, lst);
+        }
     }
 }
