@@ -1,7 +1,12 @@
 package org.deeplearning4j.examples.nlp.word2vec;
 
+import org.deeplearning4j.models.embeddings.WeightLookupTable;
+import org.deeplearning4j.models.embeddings.inmemory.InMemoryLookupTable;
 import org.deeplearning4j.models.embeddings.loader.WordVectorSerializer;
+import org.deeplearning4j.models.word2vec.VocabWord;
 import org.deeplearning4j.models.word2vec.Word2Vec;
+import org.deeplearning4j.models.word2vec.wordstore.VocabCache;
+import org.deeplearning4j.models.word2vec.wordstore.inmemory.AbstractCache;
 import org.deeplearning4j.text.sentenceiterator.BasicLineIterator;
 import org.deeplearning4j.text.sentenceiterator.FileSentenceIterator;
 import org.deeplearning4j.text.sentenceiterator.SentenceIterator;
@@ -66,16 +71,28 @@ public final class W2VAffsFull {
         File mf = new File(modelFile);
 
         Word2Vec vec;
+        int epochs = 1;
+        int vecSize = 64;
         if (!mf.exists()) {
+
+            // manual creation of VocabCache and WeightLookupTable usually isn't necessary
+            // but in this case we'll need them
+            VocabCache<VocabWord> cache = new AbstractCache<>();
+            WeightLookupTable<VocabWord> table = new InMemoryLookupTable.Builder<VocabWord>()
+                .vectorLength(vecSize)
+                .useAdaGrad(false)
+                .cache(cache).build();
 
             log.info("Creating model....");
             vec = new Word2Vec.Builder()
-                .minWordFrequency(5)
+                .minWordFrequency(10)
                 .iterations(1)
-                .epochs(1)
-                .layerSize(64)
+                .epochs(epochs)
+                .layerSize(vecSize)
                 .seed(1234)
                 .windowSize(5)
+                .lookupTable(table)
+                .vocabCache(cache)
                 .build();
 
         }
@@ -87,7 +104,7 @@ public final class W2VAffsFull {
         while (true) {
 
             log.info("------------Training round {}", round++);
-            trainOnce(vec, trainingDataPath, 1);
+            trainOnce(vec, trainingDataPath, epochs);
             evaluateSamples(vec);
             log.info("Writing word vectors to text file....");
             WordVectorSerializer.writeWord2VecModel(vec, modelFile);
