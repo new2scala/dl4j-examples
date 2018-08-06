@@ -18,7 +18,9 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
+import org.ditw.learning.akkastr.FolderNav;
 
+import java.io.File;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
 import java.net.HttpCookie;
@@ -50,6 +52,10 @@ public class MainFrame extends Application {
         bp.setLeft(thermoGrid());
 
         bp.setCenter(AuthHelper.createWebClient());
+
+        _folderNav = new FolderNav(
+            new File("/media/sf_vmshare/Icons64")
+        );
         return bp;
     }
 
@@ -100,12 +106,14 @@ public class MainFrame extends Application {
         return gp;
     }
 
+    private FolderNav _folderNav;
+
     private HBox controlBar() {
 
         Button loadButton = new Button("Open");
 
         loadButton.setOnAction(evt -> {
-            OneDriveHelpers.testToken();
+            //OneDriveHelpers.testToken();
         });
         Slider slider = new Slider();
         slider.setMin(0);
@@ -116,7 +124,19 @@ public class MainFrame extends Application {
         slider.setShowTickMarks(true);
         slider.setBlockIncrement(10);
         Button leftButton = new Button("<");
+        leftButton.setOnAction(evt -> {
+            _folderNav.prev();
+            _image.setImage(
+                new Image("file://" + _folderNav.currUrl())
+            );
+        });
         Button rightButton = new Button(">");
+        rightButton.setOnAction(evt -> {
+            _folderNav.next();
+            _image.setImage(
+                new Image("file://" + _folderNav.currUrl())
+            );
+        });
         Button playButton = new Button(">>");
 
         HBox res = new HBox();

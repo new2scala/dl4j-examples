@@ -39,9 +39,9 @@ public class TrainCountries {
         DATA_PATH = rootDir;
         WORD_VECTORS_PATH = "/media/sf_vmshare/aff-w2v-full.model";
 
-        int batchSize = 20;     //Number of examples in each minibatch
-        int nEpochs = 10;        //Number of epochs (full passes of training data) to train on
-        int truncateReviewsToLength = 20;  //Truncate reviews with length (# words) greater than this
+        int batchSize = 32;     //Number of examples in each minibatch
+        int nEpochs = 100;        //Number of epochs (full passes of training data) to train on
+        int truncateReviewsToLength = 25;  //Truncate reviews with length (# words) greater than this
 
         //DataSetIterators for training and testing respectively
         //Using AsyncDataSetIterator to do data loading in a separate thread; this may improve performance vs. waiting for data to load
@@ -80,9 +80,9 @@ public class TrainCountries {
         tokenizerFactory = new DefaultTokenizerFactory();
         tokenizerFactory.setTokenPreProcessor(new CommonPreprocessor());
         //Set up network configuration
-        int lstmLayerSize = 500;
+        int lstmLayerSize = 400;
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-            .updater(new RmsProp(0.0018))
+            .updater(new RmsProp(0.0005))
             .l2(1e-5)
             .weightInit(WeightInit.XAVIER)
             .gradientNormalization(GradientNormalization.ClipElementWiseAbsoluteValue).gradientNormalizationThreshold(1.0)
@@ -107,9 +107,9 @@ public class TrainCountries {
             Evaluation evaluation = net.evaluate(iTest);
 
             System.out.println(evaluation.stats());
+            ModelSerializer.writeModel(net, rootDir + "country.model", true);
         }
 
-        ModelSerializer.writeModel(net, rootDir + "country.model", true);
         System.out.println("----- Example complete -----");
     }
 
