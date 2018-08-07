@@ -40,7 +40,7 @@ public class TrainCountries {
         WORD_VECTORS_PATH = "/media/sf_vmshare/aff-w2v-full.model";
 
         int batchSize = 32;     //Number of examples in each minibatch
-        int nEpochs = 100;        //Number of epochs (full passes of training data) to train on
+        int nEpochs = 2;        //Number of epochs (full passes of training data) to train on
         int truncateReviewsToLength = 25;  //Truncate reviews with length (# words) greater than this
 
         //DataSetIterators for training and testing respectively
@@ -98,16 +98,17 @@ public class TrainCountries {
         net.setListeners(new ScoreIterationListener(10));
 
         System.out.println("Starting training");
+        String modelPath = rootDir + "country.model";
         for (int i = 0; i < nEpochs; i++) {
             net.fit(iTrain);
             iTrain.reset();
             System.out.println("Epoch " + i + " complete. Starting evaluation:");
 
-            //Run evaluation. This is on 25k reviews, so can take some time
-            Evaluation evaluation = net.evaluate(iTest);
+//            //Run evaluation. This is on 25k reviews, so can take some time
+//            Evaluation evaluation = net.evaluate(iTest);
+//            System.out.println(evaluation.stats());
 
-            System.out.println(evaluation.stats());
-            ModelSerializer.writeModel(net, rootDir + "country.model", true);
+            ModelSerializer.writeModel(net, modelPath, true);
         }
 
         System.out.println("----- Example complete -----");
