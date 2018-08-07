@@ -145,7 +145,7 @@ public class MainFrame extends Application {
         Button loadButton = new Button("Open");
 
         loadButton.setOnAction(evt -> {
-            //OneDriveHelpers.testToken();
+            OneDriveHelpers.testToken(_image);
         });
         Slider slider = new Slider();
         slider.setMin(0);

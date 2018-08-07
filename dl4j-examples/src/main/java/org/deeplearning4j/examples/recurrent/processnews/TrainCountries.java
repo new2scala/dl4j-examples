@@ -25,6 +25,7 @@ import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.indexing.INDArrayIndex;
 import org.nd4j.linalg.indexing.NDArrayIndex;
+import org.nd4j.linalg.learning.config.Nesterovs;
 import org.nd4j.linalg.learning.config.RmsProp;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.slf4j.Logger;
@@ -52,7 +53,7 @@ public class TrainCountries {
         DATA_PATH = rootDir;
         WORD_VECTORS_PATH = "/media/sf_vmshare/aff-w2v-full.model";
 
-        int batchSize = 128;     //Number of examples in each minibatch
+        int batchSize = 32;     //Number of examples in each minibatch
         int nEpochs = 20;        //Number of epochs (full passes of training data) to train on
         int truncateReviewsToLength = 20;  //Truncate reviews with length (# words) greater than this
 
@@ -97,14 +98,16 @@ public class TrainCountries {
         //Set up network configuration
         int lstmLayerSize = 512;
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-            .updater(new RmsProp(0.00001))
+            .updater(new Nesterovs(0.00001, 0.01))
             .l2(1e-5)
             .weightInit(WeightInit.XAVIER)
             .gradientNormalization(GradientNormalization.ClipElementWiseAbsoluteValue).gradientNormalizationThreshold(1.0)
             .list()
             .layer(0, new LSTM.Builder().nIn(inputNeurons).nOut(lstmLayerSize)
+                .activation(Activation.TANH).build())
+            .layer(1, new LSTM.Builder().nIn(lstmLayerSize).nOut(lstmLayerSize)
                 .activation(Activation.SOFTSIGN).build())
-            .layer(1, new RnnOutputLayer.Builder().activation(Activation.SOFTMAX)
+            .layer(2, new RnnOutputLayer.Builder().activation(Activation.SOFTMAX)
                 .lossFunction(LossFunctions.LossFunction.MCXENT).nIn(lstmLayerSize).nOut(outputs).build())
             .pretrain(false)
             .backprop(true)
