@@ -2,7 +2,7 @@ package org.ditw.learning.javafx.thermoapp;
 
 public final class ThermoColorHelper {
     private final static Double _ThermoValMax = 80.0;
-    private final static Double _ThermoValMin = -40.0;
+    public final static Double _ThermoValMin = -40.0;
     private final static Double _ThermoColorNeutralVal = 0.0;
     private final static Double _ThermoColorRangeBlue =
         _ThermoColorNeutralVal - _ThermoValMin;

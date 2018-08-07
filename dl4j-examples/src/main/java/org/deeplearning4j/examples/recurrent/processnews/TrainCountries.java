@@ -97,7 +97,7 @@ public class TrainCountries {
         //Set up network configuration
         int lstmLayerSize = 512;
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-            .updater(new RmsProp(0.0001))
+            .updater(new RmsProp(0.00001))
             .l2(1e-5)
             .weightInit(WeightInit.XAVIER)
             .gradientNormalization(GradientNormalization.ClipElementWiseAbsoluteValue).gradientNormalizationThreshold(1.0)
