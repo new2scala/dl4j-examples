@@ -55,14 +55,14 @@ public class TrainCountries {
 
 
     public static void main(String[] args) throws Exception {
-        String rootDir = "/media/sf_vmshare/aff-w2v-td/";
+        String rootDir = "/media/sf_vmshare/aff-w2v-tr/";
         DATA_PATH = rootDir;
-        WORD_VECTORS_PATH = "/media/sf_vmshare/aff-w2v-full.model";
-        String modelPath = rootDir + "country.model";
+        WORD_VECTORS_PATH = "/media/sf_vmshare/aff-w2v-trunc.model";
+        String modelPath = rootDir + "country-tr.model";
 
         int batchSize = 128;     //Number of examples in each minibatch
-        int nEpochs = 10;        //Number of epochs (full passes of training data) to train on
-        int truncateReviewsToLength = 20;  //Truncate reviews with length (# words) greater than this
+        int nEpochs = 1000;        //Number of epochs (full passes of training data) to train on
+        int truncateReviewsToLength = 15;  //Truncate reviews with length (# words) greater than this
 
         //DataSetIterators for training and testing respectively
         //Using AsyncDataSetIterator to do data loading in a separate thread; this may improve performance vs. waiting for data to load
@@ -70,7 +70,7 @@ public class TrainCountries {
         wordVectors = WordVectorSerializer.readWord2VecModel(new File(WORD_VECTORS_PATH));
         log.info("Done loading w2v");
 
-        loadCategoryMap("/media/sf_vmshare/aff-w2v-td/categories.txt");
+        loadCategoryMap(rootDir + "categories.txt");
 
         tokenizerFactory = new DefaultTokenizerFactory();
         tokenizerFactory.setTokenPreProcessor(new CommonPreprocessor());
@@ -118,8 +118,8 @@ public class TrainCountries {
             //Set up network configuration
             int lstmLayerSize = 512;
             MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-                .updater(new RmsProp(0.1))
-                .l2(1e-5)
+                .updater(new Nesterovs(0.00001,0.01))
+                //.l2(1e-5)
                 .weightInit(WeightInit.XAVIER)
                 .gradientNormalization(GradientNormalization.ClipElementWiseAbsoluteValue).gradientNormalizationThreshold(1.0)
                 .list()
