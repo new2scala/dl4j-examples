@@ -2,6 +2,7 @@ package org.deeplearning4j.examples.recurrent.processnews;
 
 import org.apache.commons.io.IOUtils;
 import org.datavec.api.util.ClassPathResource;
+import org.deeplearning4j.api.storage.StatsStorage;
 import org.deeplearning4j.eval.Evaluation;
 import org.deeplearning4j.examples.nlp.word2vec.W2VAffsFull;
 import org.deeplearning4j.models.embeddings.loader.WordVectorSerializer;
@@ -18,6 +19,9 @@ import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
 import org.deeplearning4j.text.tokenization.tokenizer.preprocessor.CommonPreprocessor;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
+import org.deeplearning4j.ui.api.UIServer;
+import org.deeplearning4j.ui.stats.StatsListener;
+import org.deeplearning4j.ui.storage.InMemoryStatsStorage;
 import org.deeplearning4j.util.ModelSerializer;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -53,8 +57,8 @@ public class TrainCountries {
         DATA_PATH = rootDir;
         WORD_VECTORS_PATH = "/media/sf_vmshare/aff-w2v-full.model";
 
-        int batchSize = 32;     //Number of examples in each minibatch
-        int nEpochs = 20;        //Number of epochs (full passes of training data) to train on
+        int batchSize = 128;     //Number of examples in each minibatch
+        int nEpochs = 10;        //Number of epochs (full passes of training data) to train on
         int truncateReviewsToLength = 20;  //Truncate reviews with length (# words) greater than this
 
         //DataSetIterators for training and testing respectively
@@ -98,16 +102,16 @@ public class TrainCountries {
         //Set up network configuration
         int lstmLayerSize = 512;
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-            .updater(new Nesterovs(0.00001, 0.01))
+            .updater(new RmsProp(0.0001))
             .l2(1e-5)
             .weightInit(WeightInit.XAVIER)
             .gradientNormalization(GradientNormalization.ClipElementWiseAbsoluteValue).gradientNormalizationThreshold(1.0)
             .list()
             .layer(0, new LSTM.Builder().nIn(inputNeurons).nOut(lstmLayerSize)
-                .activation(Activation.TANH).build())
-            .layer(1, new LSTM.Builder().nIn(lstmLayerSize).nOut(lstmLayerSize)
                 .activation(Activation.SOFTSIGN).build())
-            .layer(2, new RnnOutputLayer.Builder().activation(Activation.SOFTMAX)
+//            .layer(1, new LSTM.Builder().nIn(lstmLayerSize).nOut(lstmLayerSize)
+//                .activation(Activation.SOFTSIGN).build())
+            .layer(1, new RnnOutputLayer.Builder().activation(Activation.SOFTMAX)
                 .lossFunction(LossFunctions.LossFunction.MCXENT).nIn(lstmLayerSize).nOut(outputs).build())
             .pretrain(false)
             .backprop(true)
@@ -120,8 +124,14 @@ public class TrainCountries {
         net.init();
         net.setListeners(new ScoreIterationListener(10));
 
+        UIServer uiServer = UIServer.getInstance();
+        StatsStorage statsStorage = new InMemoryStatsStorage();
+        uiServer.attach(statsStorage);
+        net.setListeners(new ScoreIterationListener(10), new StatsListener(statsStorage));
+
+
         System.out.println("Starting training");
-        String modelPath = rootDir + "country.model";
+        String modelPath = rootDir + "country_wui.model";
         for (int i = 0; i < nEpochs; i++) {
             net.fit(iTrain);
             iTrain.reset();
