@@ -62,7 +62,7 @@ public class TrainCountries {
 
         int batchSize = 128;     //Number of examples in each minibatch
         int nEpochs = 1000;        //Number of epochs (full passes of training data) to train on
-        int truncateReviewsToLength = 15;  //Truncate reviews with length (# words) greater than this
+        int truncateReviewsToLength = 20;  //Truncate reviews with length (# words) greater than this
 
         //DataSetIterators for training and testing respectively
         //Using AsyncDataSetIterator to do data loading in a separate thread; this may improve performance vs. waiting for data to load
@@ -118,8 +118,11 @@ public class TrainCountries {
             //Set up network configuration
             int lstmLayerSize = 512;
             MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-                .updater(new Nesterovs(0.00001,0.01))
-                //.l2(1e-5)
+                .updater(
+                    new RmsProp(0.0005)
+                    //new Nesterovs(0.00001,0.01)
+                )
+                .l2(1e-5)
                 .weightInit(WeightInit.XAVIER)
                 .gradientNormalization(GradientNormalization.ClipElementWiseAbsoluteValue).gradientNormalizationThreshold(1.0)
                 .list()

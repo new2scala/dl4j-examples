@@ -4,6 +4,8 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Worker;
 import javafx.scene.web.WebView;
+import org.w3c.dom.Document;
+import org.w3c.dom.html.HTMLFormElement;
 
 import java.net.URI;
 import java.util.LinkedHashMap;
@@ -12,7 +14,7 @@ import java.util.Map;
 
 final class AuthHelper {
 
-    private static String _AuthUrl = "https://login.live.com/oauth20_authorize.srf?client_id=dcfbb7e5-d75f-4726-9201-bb35a438ef9b&scope=files.read&response_type=token&redirect_uri=https://login.live.com/oauth20_desktop.srf";
+    private static String _AuthUrl = "https://login.live.com/oauth20_authorize.srf?client_id=dcfbb7e5-d75f-4726-9201-bb35a438ef9b&scope=files.read%20offline_access&response_type=token&redirect_uri=https://login.live.com/oauth20_desktop.srf";
     private static URI uri = URI.create(_AuthUrl);
 
     static WebView createWebClient() {
@@ -60,6 +62,7 @@ final class AuthHelper {
                             }
 
                             System.out.println("Current location: " + wc.getEngine().getLocation());
+                            //wc.getEngine().
 
                             parseTokenFromURL(wc.getEngine().getLocation());
                             //java.net.CookieHandler.getDefault().put(uri, cookies);
@@ -72,12 +75,19 @@ final class AuthHelper {
                 }
             }
         );
+
+        wc.getEngine().documentProperty().addListener(new ChangeListener<Document>() {
+            @Override
+            public void changed(ObservableValue<? extends Document> ov, Document oldDoc, Document doc) {
+                System.out.println(doc);
+            }
+        });
         wc.getEngine().load(_AuthUrl);
 
         return wc;
     }
 
-    private static String accessToken = "EwBgA8l6BAAURSN/FHlDW5xN74t6GzbtsBBeBUYAAUqxeu0uhAIBvVtxkbkuYCnoXz6mOjxZExlA8tduCxWJusn0RW/6m4phUcMI75m2TzE3Krwvti0gkP6KMkGt2rgCJCUXuV2qE7qMuT/hv5WsaniJoJ0MVQtLTLamsZqaClnAxwHWT%2bPrLDhsar5u/7M0IkvMu0LVTIOjHQ17d/7137WnF6krTRvNCwxNxLpP9CePGBfkhxeQTX2OHBG/nI7B7vzZxzD9seU53wTFDOCpLso1hKet0HXUaeHrr24wUKH3c482X2RHwxj3LKboXANDE76C5jDhv7zc/xJ5AZrCMAC0dHDaAEMi52LgA9yCJJ/VP6F17iqFFyGeLcNbvcADZgAACF0rXwUfFENiMAJ5p7Pz68cvZCJe%2bG7rpZ9keRxnSsodgTuPeCArk2dWCZNmYIY8qJMKCY7PnpeT01Rw7IIMpqz2zHk4vKhgK3IBmAI8pHbOI4qYb%2bkeNpfb8naCCXiav8Xzqr9%2buctp7%2bZkv2ea74u2HJoVJm857SE%2bIrkp%2bo83gnjT7Wd7Z4ZuKGI/6b0SZWl2IDRfxOADJAAIwyVxPEFTD9EtT45MyXawYtjCcuK1mELe0Uq1fOXcQPlr94EJn8V6tvwAkoCtNm9eeaWTO1eKSLGwfksXjshJrxnzpZic93qQI9QPOrRWDKRvvp2guwEAVK3Wky82F7xV2pl4vEGvGETYQAvYSn5l%2bCqb1UG6uIL/BtitHnOB3ADXShmkweHuBipMT0LxTFA53vkdyQUl3GAuwWqs4M2%2bwyGNvrMEsEtOCPmQ4ZuxyLyJrCRfujB5wBP6hSwpQxaNmn5u1scJxy6PCJtdOCvwZST6F47cBqTQx8OE6QqndMODoMZZ/I9aYVh1vTZEXJHSwNcQEJRJBgaxbRP4vBOgWfFVaCMuw2HZLI62dBaoVYDLXr7tqRVaOXX/7f4%2bhXHjIENs4juVfUrDv1DQlnnp5EK%2bCgn9ktUsi2hHCeTLCIuoap2xjbBoVh8ksjoTxm7NVUm0D/QXukVcRo2ShOx/CdoW%2bAPVhLZOLrVDntJ2JW5QOwiqLovMY3JxUaemDPJ/5nf442LElOcLhvEMmTQfPPqL0cQYmNPvqLdMF9L80GEC";
+    private static String accessToken = "EwBgA8l6BAAURSN/FHlDW5xN74t6GzbtsBBeBUYAAYUXzrLMQ7yk4yIWh/nvV2sRTpMpQxSKaAThjbuNAXVif5wGSzTMywxlxGQCpSEgfOUJ/kIQ686Fs51IWxPilL%2b9ii3Qhaj0qkk9UnR4HVwG17IqdPx7WigrcK5VBrvzMjX/udvBnzSwF9%2btUo%2bKQ0X0HUxEff1KGokGxVXlhPqKCNiVgzBKj81GuEv%2b197D2SktTKIRV49MVsI7w3yAjBMPkxLbO0Rfwt55AuyQpdVOKL4pw9yCERkcGHApknn69%2baFN065%2b5SPXbNofvw4mvmSehHjgZdA9YEiAr9q9mAIEkhHBIXy33wWmAIGJu/StOfKekpClZXKZlenFWjrCX0DZgAACIAB9emeOFVpMAK%2bgWEaW8FmawJjlA1ccH9vDVImW64f7ECf3Bhef0QhAmvJicGJzYYvoyryJozZP0UXRp/bEqiI6ZbjTml7wrxklon0qvqBukZJMbFLRQ1j2JdrFNRqTpvjwjBKgUfwsZBA%2bXD9lPTu%2b9zw4OCD3nlrFrFZDAA54yrfCByvefOfmRB715vIhlk6aYnL%2bWR6Rqi/nhB3ZDwpe7otdHXvbhLaiuEDb7LAEdRf8pwJ63MW42jZRPIQva8PzyIDl%2bFrOPQm98NwEAIR9GfUeif4etqBj09tQ1fX%2b61E8JoVxQqCAAGtsZre1nq3XVY5NaN3FYREJdfsqQaKzDx1mWpjrcj4IqkeI2sVger2YnC6UaC5%2bmztMakd4XY2QBWy6nnP6EPGkci0t5M61NB2Gi9hmkPl2gPySk5ZZWBrnKbAvSTg8vODtNqTKPG8/C%2bcneCXWzZZcXmWEWW4Tj4laZtHBUQ3/awSVpybd%2b02qWx8L9%2bvVAQ%2b18/RJezXMfW1d%2bDN043shHuPYfQ5Plb4m75Ps3wkkT6%2bqFcSq2DZZg41ttJIB7Pkh15YIb8j7WFJp6FYjHdYBWDQYVm%2biqvVvPFimqjwcH2lTLVMl2fCJXsRB/8zRyWz8XXqGWJC1orNaio73tAphLj7/Iped6nMeBEQIDPDGbaSU%2b4Nv8Exe7rnO2FZceyA8UzILEgIOmesb3xk%2bHTVOe%2bCOj8pfHH0OanXlxACv7OfdrYWwfxw5CA37b10h2EC";
     private static String accessTokenStr2Find = "access_token=";
 
     private static void parseTokenFromURL(String url) {

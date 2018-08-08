@@ -7,13 +7,11 @@ import javafx.concurrent.Worker;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ListView;
 import javafx.scene.control.Slider;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.web.WebView;
@@ -36,6 +34,7 @@ import java.util.*;
 public class MainFrame extends Application {
 
     private ImageView _image;
+    private BorderPane borderPane;
 
     @Override
     public void start(Stage primaryStage) {
@@ -52,18 +51,18 @@ public class MainFrame extends Application {
     }
 
     private BorderPane layout() {
-        BorderPane bp = new BorderPane();
+        borderPane = new BorderPane();
 
-        bp.setTop(controlBar());
-        bp.setRight(image());
-        bp.setLeft(thermoGrid());
+        borderPane.setTop(controlBar());
+        borderPane.setRight(image());
+        borderPane.setLeft(thermoGrid());
 
-        bp.setCenter(AuthHelper.createWebClient());
+        borderPane.setCenter(AuthHelper.createWebClient());
 
 //        _folderNav = new FolderNav(
 //            new File("/media/sf_vmshare/Icons64")
 //        );
-        return bp;
+        return borderPane;
     }
 
     private StackPane image() {
@@ -140,12 +139,22 @@ public class MainFrame extends Application {
         }
     }
 
+    private void createFileList(DataHelpers.OneDriveFolderResp folder) {
+        VBox vb = new VBox();
+        ListView<DataHelpers.OneDriveFolderItem> folderItems = new ListView<>();
+        folderItems.getItems().addAll(folder.value());
+        vb.getChildren().add(folderItems);
+        borderPane.setCenter(vb);
+    }
+
     private HBox controlBar() {
 
         Button loadButton = new Button("Open");
 
         loadButton.setOnAction(evt -> {
-            OneDriveHelpers.testToken(_image);
+            DataHelpers.OneDriveFolderResp folder = OneDriveHelpers.testToken(_image);
+            createFileList(folder);
+            //folder.value()
         });
         Slider slider = new Slider();
         slider.setMin(0);

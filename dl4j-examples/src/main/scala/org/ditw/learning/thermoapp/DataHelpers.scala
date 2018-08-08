@@ -18,7 +18,9 @@ object DataHelpers {
     name:String,
     //downloadUrl:String
     `@microsoft.graph.downloadUrl`:String
-  )
+  ) {
+    override def toString: String = name
+  }
 
   case class OneDriveFolderResp(
     value:Array[OneDriveFolderItem]
