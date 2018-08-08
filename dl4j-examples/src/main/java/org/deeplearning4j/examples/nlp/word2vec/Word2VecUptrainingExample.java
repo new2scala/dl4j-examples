@@ -42,7 +42,7 @@ public class Word2VecUptrainingExample {
 
         log.info("Load & Vectorize Sentences....");
         // Strip white space before and after for each line
-        String filePath = "/media/sf_vmshare/aff-w2v/part-00000";
+        String filePath = new ClassPathResource("raw_sentences.txt").getFile().getAbsolutePath();
         SentenceIterator iter = new BasicLineIterator(filePath);
         // Split on white spaces in the line to get words
         TokenizerFactory t = new DefaultTokenizerFactory();
@@ -60,7 +60,7 @@ public class Word2VecUptrainingExample {
         Word2Vec vec = new Word2Vec.Builder()
                 .minWordFrequency(5)
                 .iterations(1)
-                .epochs(1)
+                .epochs(2)
                 .layerSize(100)
                 .seed(42)
                 .windowSize(5)
@@ -109,7 +109,7 @@ public class Word2VecUptrainingExample {
     }
 
     private static void evaluateSamples(Word2Vec w2v) {
-        List<String> words = Arrays.asList("Department", "Institute", "Laboratory", "Germany", "USA", "TN");
+        List<String> words = Arrays.asList("day", "night");
 
         for (String w : words) {
             Collection<String> lst = w2v.wordsNearestSum(w.toLowerCase(), 10);

@@ -52,10 +52,13 @@ public class TrainCountries {
     public static WordVectors wordVectors;
     private static TokenizerFactory tokenizerFactory;
 
+
+
     public static void main(String[] args) throws Exception {
         String rootDir = "/media/sf_vmshare/aff-w2v-td/";
         DATA_PATH = rootDir;
         WORD_VECTORS_PATH = "/media/sf_vmshare/aff-w2v-full.model";
+        String modelPath = rootDir + "country.model";
 
         int batchSize = 128;     //Number of examples in each minibatch
         int nEpochs = 10;        //Number of epochs (full passes of training data) to train on
@@ -99,29 +102,44 @@ public class TrainCountries {
 
         tokenizerFactory = new DefaultTokenizerFactory();
         tokenizerFactory.setTokenPreProcessor(new CommonPreprocessor());
-        //Set up network configuration
-        int lstmLayerSize = 512;
-        MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-            .updater(new RmsProp(0.0001))
-            .l2(1e-5)
-            .weightInit(WeightInit.XAVIER)
-            .gradientNormalization(GradientNormalization.ClipElementWiseAbsoluteValue).gradientNormalizationThreshold(1.0)
-            .list()
-            .layer(0, new LSTM.Builder().nIn(inputNeurons).nOut(lstmLayerSize)
-                .activation(Activation.SOFTSIGN).build())
+
+        MultiLayerNetwork net;
+        if (new File(modelPath).exists()) {
+            System.out.println("+++++++++++++ Restoring model");
+            net = ModelSerializer.restoreMultiLayerNetwork(modelPath);
+            runTests(
+                net,
+                inputs,
+                expResults
+            );
+        }
+        else {
+            System.out.println("------------- Creating model");
+            //Set up network configuration
+            int lstmLayerSize = 512;
+            MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
+                .updater(new RmsProp(0.1))
+                .l2(1e-5)
+                .weightInit(WeightInit.XAVIER)
+                .gradientNormalization(GradientNormalization.ClipElementWiseAbsoluteValue).gradientNormalizationThreshold(1.0)
+                .list()
+                .layer(0, new LSTM.Builder().nIn(inputNeurons).nOut(lstmLayerSize)
+                    .activation(Activation.SOFTSIGN).build())
 //            .layer(1, new LSTM.Builder().nIn(lstmLayerSize).nOut(lstmLayerSize)
 //                .activation(Activation.SOFTSIGN).build())
-            .layer(1, new RnnOutputLayer.Builder().activation(Activation.SOFTMAX)
-                .lossFunction(LossFunctions.LossFunction.MCXENT).nIn(lstmLayerSize).nOut(outputs).build())
-            .pretrain(false)
-            .backprop(true)
-            .backpropType(BackpropType.TruncatedBPTT)
-            .tBPTTBackwardLength(6)
-            .tBPTTForwardLength(6)
-            .build();
+                .layer(1, new RnnOutputLayer.Builder().activation(Activation.SOFTMAX)
+                    .lossFunction(LossFunctions.LossFunction.MCXENT).nIn(lstmLayerSize).nOut(outputs).build())
+                .pretrain(false)
+                .backprop(true)
+                .backpropType(BackpropType.TruncatedBPTT)
+                .tBPTTBackwardLength(6)
+                .tBPTTForwardLength(6)
+                .build();
 
-        MultiLayerNetwork net = new MultiLayerNetwork(conf);
-        net.init();
+            net = new MultiLayerNetwork(conf);
+            net.init();
+        }
+
         net.setListeners(new ScoreIterationListener(10));
 
         UIServer uiServer = UIServer.getInstance();
@@ -131,7 +149,7 @@ public class TrainCountries {
 
 
         System.out.println("Starting training");
-        String modelPath = rootDir + "country_wui.model";
+
         for (int i = 0; i < nEpochs; i++) {
             net.fit(iTrain);
             iTrain.reset();
@@ -145,26 +163,8 @@ public class TrainCountries {
 
             runTests(
                 net,
-                new String[]{
-                    "1 virginia commonwealth university school of nursing richmond virginia",
-                    "102nd hospital of chinese pla",
-                    "1 gene experiment center institute of applied biochemistry university of tsukuba tsukuba-city 305",
-                    "1 direktion pflege und mttb universitätsspital zürich",
-                    "11 education centre freeman hospital newcastle upon tyne",
-                    "1 best practice advocacy centre new zealand dunedin",
-                    "**division of gastroenterology and hepatology medical university of vienna vienna",
-                    "1 department of psychology princeton university"
-                },
-                new String[]{
-                    "United States",
-                    "China",
-                    "Japan",
-                    "Switzerland",
-                    "United Kingdom",
-                    "New Zealand",
-                    "Austria",
-                    "United States"
-                }
+                inputs,
+                expResults
             );
         }
 
@@ -186,6 +186,27 @@ public class TrainCountries {
             revCategoryMap.put(countryName, cat);
         }
     }
+
+    private final static String[] inputs = new String[]{
+        "virginia commonwealth university school of nursing richmond virginia",
+        "102nd hospital of chinese pla",
+        "gene experiment center institute of applied biochemistry university of tsukuba tsukuba-city 305",
+        "direktion pflege und mttb universitätsspital zürich",
+        "education centre freeman hospital newcastle upon tyne",
+        "best practice advocacy centre new zealand dunedin",
+        "**division of gastroenterology and hepatology medical university of vienna vienna",
+        "department of psychology princeton university"
+    };
+    private final static String[] expResults = new String[]{
+        "United States",
+        "China",
+        "Japan",
+        "Switzerland",
+        "United Kingdom",
+        "New Zealand",
+        "Austria",
+        "United States"
+    };
 
     private static void runTests(MultiLayerNetwork model, String[] inputs, String[] expCountries) {
         for (int i = 0; i < inputs.length; i ++) {
