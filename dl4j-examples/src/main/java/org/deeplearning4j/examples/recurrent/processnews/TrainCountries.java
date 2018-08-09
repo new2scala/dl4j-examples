@@ -7,6 +7,7 @@ import org.deeplearning4j.eval.Evaluation;
 import org.deeplearning4j.examples.nlp.word2vec.W2VAffsFull;
 import org.deeplearning4j.models.embeddings.loader.WordVectorSerializer;
 import org.deeplearning4j.models.embeddings.wordvectors.WordVectors;
+import org.deeplearning4j.nn.api.Layer;
 import org.deeplearning4j.nn.conf.BackpropType;
 import org.deeplearning4j.nn.conf.GradientNormalization;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
@@ -58,7 +59,8 @@ public class TrainCountries {
         String rootDir = "/media/sf_vmshare/aff-w2v-tr/";
         DATA_PATH = rootDir;
         WORD_VECTORS_PATH = "/media/sf_vmshare/aff-w2v-trunc.model";
-        String modelPath = rootDir + "country-tr.model";
+        //String modelPath = rootDir + "country-tr-2layer.model";
+        String modelPath = rootDir + "country-tr-tt.model";
 
         int batchSize = 128;     //Number of examples in each minibatch
         int nEpochs = 1000;        //Number of epochs (full passes of training data) to train on
@@ -116,10 +118,10 @@ public class TrainCountries {
         else {
             System.out.println("------------- Creating model");
             //Set up network configuration
-            int lstmLayerSize = 512;
+            int lstmLayerSize = 256;
             MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .updater(
-                    new RmsProp(0.0005)
+                    new RmsProp(0.1)
                     //new Nesterovs(0.00001,0.01)
                 )
                 .l2(1e-5)
@@ -128,19 +130,29 @@ public class TrainCountries {
                 .list()
                 .layer(0, new LSTM.Builder().nIn(inputNeurons).nOut(lstmLayerSize)
                     .activation(Activation.SOFTSIGN).build())
-//            .layer(1, new LSTM.Builder().nIn(lstmLayerSize).nOut(lstmLayerSize)
-//                .activation(Activation.SOFTSIGN).build())
-                .layer(1, new RnnOutputLayer.Builder().activation(Activation.SOFTMAX)
+                .layer(1, new LSTM.Builder().nIn(lstmLayerSize).nOut(lstmLayerSize)
+                    .activation(Activation.SOFTSIGN).build())
+                .layer(2, new RnnOutputLayer.Builder().activation(Activation.SOFTMAX)
                     .lossFunction(LossFunctions.LossFunction.MCXENT).nIn(lstmLayerSize).nOut(outputs).build())
                 .pretrain(false)
                 .backprop(true)
                 .backpropType(BackpropType.TruncatedBPTT)
-                .tBPTTBackwardLength(6)
-                .tBPTTForwardLength(6)
+                .tBPTTBackwardLength(10)
+                .tBPTTForwardLength(10)
                 .build();
 
             net = new MultiLayerNetwork(conf);
             net.init();
+
+            //Print the  number of parameters in the network (and for each layer)
+            Layer[] layers = net.getLayers();
+            int totalNumParams = 0;
+            for( int i=0; i<layers.length; i++ ){
+                int nParams = layers[i].numParams();
+                System.out.println("Number of parameters in layer " + i + ": " + nParams);
+                totalNumParams += nParams;
+            }
+            System.out.println("Total number of network parameters: " + totalNumParams);
         }
 
         net.setListeners(new ScoreIterationListener(10));
@@ -191,6 +203,18 @@ public class TrainCountries {
     }
 
     private final static String[] inputs = new String[]{
+        "observatory cape town",
+        "and dentistry of new jersey new brunswick new jersey [[dgt5]]",
+        "professor with the university of british columbia vancouver british columbia",
+        "university of turku",
+        "independent contractor williamsville ny",
+        "spain and novo nordisk [[dk-dgt4]] bagsvaerd",
+        "westmead hospital westmead nsw",
+        "dentistry and pharmaceutical sciences okayama university",
+        "rosedale mansions boulevard hull [[aad]] [[daa]]",
+        "montana cancer consortium billings mt",
+        "charing cross hospital london",
+        "institut pasteur de la guyane cayenne cedex guyane",
         "virginia commonwealth university school of nursing richmond virginia",
         "102nd hospital of chinese pla",
         "gene experiment center institute of applied biochemistry university of tsukuba tsukuba-city 305",
@@ -201,6 +225,18 @@ public class TrainCountries {
         "department of psychology princeton university"
     };
     private final static String[] expResults = new String[]{
+        "South Africa",
+        "United States",
+        "Canada",
+        "Finland",
+        "United States",
+        "Denmark",
+        "Australia",
+        "Japan",
+        "United Kingdom",
+        "United States",
+        "United Kingdom",
+        "France",
         "United States",
         "China",
         "Japan",
@@ -212,6 +248,7 @@ public class TrainCountries {
     };
 
     private static void runTests(MultiLayerNetwork model, String[] inputs, String[] expCountries) {
+        int trueCount = 0;
         for (int i = 0; i < inputs.length; i ++) {
             String input = inputs[i];
             String expCountry = expCountries[i];
@@ -236,10 +273,24 @@ public class TrainCountries {
                     expCountryVal = String.format("expected [%s/%.4f]", expCountry, v);
             }
             String resCat = categoryMap.get(cat);
+
+            String trueOrNot;
+            if (resCat.equals(expCountry)) {
+                trueCount ++;
+                trueOrNot = "++";
+            }
+            else {
+                trueOrNot = "--";
+            }
             System.out.println(
-                String.format("%s/%.4f(%s):\t%s", resCat, max, expCountryVal, input)
+                String.format("\t%s %s/%.4f(%s):\t%s", trueOrNot, resCat, max, expCountryVal, input)
             );
+
         }
+
+        System.out.println(
+            String.format("Total %%: %.3f", trueCount*100.0/expResults.length)
+        );
     }
 
     private static DataSet prepareTestData(String input) {

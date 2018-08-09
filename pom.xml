@@ -45,6 +45,7 @@
         <aws.sdk.version>1.11.109</aws.sdk.version>
         <jackson.version>2.6.6</jackson.version>
         <scala.plugin.version>3.2.2</scala.plugin.version>
+        <apache.spark.version>2.3.0</apache.spark.version>
     </properties>
 
     <modules>
