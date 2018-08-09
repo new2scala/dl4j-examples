@@ -55,9 +55,9 @@ public class MainFrame extends Application {
 
         borderPane.setTop(controlBar());
         borderPane.setRight(image());
-        borderPane.setLeft(thermoGrid());
+        borderPane.setCenter(thermoGrid());
 
-        borderPane.setCenter(AuthHelper.createWebClient());
+        borderPane.setLeft(AuthHelper.createWebClient());
 
 //        _folderNav = new FolderNav(
 //            new File("/media/sf_vmshare/Icons64")
@@ -143,8 +143,19 @@ public class MainFrame extends Application {
         VBox vb = new VBox();
         ListView<DataHelpers.OneDriveFolderItem> folderItems = new ListView<>();
         folderItems.getItems().addAll(folder.value());
+
+        folderItems.getSelectionModel().selectedItemProperty().addListener(
+            new ChangeListener<DataHelpers.OneDriveFolderItem>() {
+                @Override
+                public void changed(ObservableValue<? extends DataHelpers.OneDriveFolderItem> observable, DataHelpers.OneDriveFolderItem oldValue, DataHelpers.OneDriveFolderItem newValue) {
+                    String downloadUrl = newValue.$atmicrosoft$u002Egraph$u002EdownloadUrl();
+                    OneDriveHelpers.download(downloadUrl, _image);
+                }
+            }
+        );
+
         vb.getChildren().add(folderItems);
-        borderPane.setCenter(vb);
+        borderPane.setLeft(vb);
     }
 
     private HBox controlBar() {

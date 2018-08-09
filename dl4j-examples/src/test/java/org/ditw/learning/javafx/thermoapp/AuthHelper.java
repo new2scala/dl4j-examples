@@ -1,11 +1,19 @@
 package org.ditw.learning.javafx.thermoapp;
 
+import com.sun.tools.doclets.formats.html.markup.HtmlDocument;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Worker;
 import javafx.scene.web.WebView;
 import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.events.DocumentEvent;
+import org.w3c.dom.events.Event;
+import org.w3c.dom.events.EventListener;
+import org.w3c.dom.events.EventTarget;
 import org.w3c.dom.html.HTMLFormElement;
+import org.w3c.dom.html.HTMLInputElement;
 
 import java.net.URI;
 import java.util.LinkedHashMap;
@@ -79,7 +87,73 @@ final class AuthHelper {
         wc.getEngine().documentProperty().addListener(new ChangeListener<Document>() {
             @Override
             public void changed(ObservableValue<? extends Document> ov, Document oldDoc, Document doc) {
-                System.out.println(doc);
+                try {
+                    //Thread.sleep(2000);
+                    EventTarget evtTarget = (EventTarget)doc;
+
+                    evtTarget.addEventListener("DOMNodeInserted", new EventListener() {
+                        @Override
+                        public void handleEvent(Event evt) {
+                            if (evt.getType().equals("DOMNodeInserted")) {
+                                NodeList nodes = doc.getElementsByTagName("form");
+                                if (nodes.getLength() > 0) {
+                                    HTMLFormElement form = (HTMLFormElement) doc.getElementsByTagName("form").item(0);
+                                    if (form.getAttribute("name").equals("f1")) {
+                                        System.out.println("found form");
+                                        NodeList inputs = form.getElementsByTagName("input");
+                                        System.out.println("Inputs length: " + inputs.getLength());
+                                        Node emailLogin = null;
+                                        for (int i = 0; i < inputs.getLength(); i++) {
+                                            Node n = inputs.item(i);
+                                            Node nameAttr = n.getAttributes().getNamedItem("name");
+                                            if (nameAttr != null) {
+                                                System.out.println("\tinput name: "+nameAttr.getNodeValue());
+
+                                                if (nameAttr.getNodeValue().equals("loginfmt")) {
+                                                    emailLogin = n;
+                                                    break;
+                                                }
+                                            }
+
+                                        }
+                                        if (emailLogin != null) {
+                                            System.out.println("found login input!");
+                                            HTMLInputElement loginInput = (HTMLInputElement)emailLogin;
+                                            try {
+                                                EventTarget et = (EventTarget)emailLogin;
+                                                DocumentEvent docEvt = (DocumentEvent)doc;
+                                                Event tt = docEvt.createEvent("MouseEvent");
+                                                tt.initEvent("click", true, true);
+
+                                                et.dispatchEvent(tt);
+                                                loginInput.setValue("jiajiwu@live.com");
+//                                                loginInput.setAttribute("placeholder", "");
+                                                //loginInput.setAttribute("value", "jiajiwu@live.com");
+//                                                Node v = emailLogin.getAttributes().getNamedItem("value");
+//                                                if (v == null) {
+//                                                    v = doc.createAttribute("value");
+//                                                    System.out.println("node created");
+//                                                    System.out.println("node inserted");
+//                                                }
+//                                                v.setTextContent("jiajiwu@live.com");
+//                                                emailLogin.getAttributes().setNamedItem(v);
+                                            }
+                                            catch (Exception ex) {
+                                                System.out.println(ex.getMessage());
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }, false);
+
+
+
+                }
+                catch (Exception ex) {
+                    System.out.println("Exception: " + ex.getMessage());
+                }
             }
         });
         wc.getEngine().load(_AuthUrl);
@@ -87,7 +161,7 @@ final class AuthHelper {
         return wc;
     }
 
-    private static String accessToken = "EwBgA8l6BAAURSN/FHlDW5xN74t6GzbtsBBeBUYAAYUXzrLMQ7yk4yIWh/nvV2sRTpMpQxSKaAThjbuNAXVif5wGSzTMywxlxGQCpSEgfOUJ/kIQ686Fs51IWxPilL%2b9ii3Qhaj0qkk9UnR4HVwG17IqdPx7WigrcK5VBrvzMjX/udvBnzSwF9%2btUo%2bKQ0X0HUxEff1KGokGxVXlhPqKCNiVgzBKj81GuEv%2b197D2SktTKIRV49MVsI7w3yAjBMPkxLbO0Rfwt55AuyQpdVOKL4pw9yCERkcGHApknn69%2baFN065%2b5SPXbNofvw4mvmSehHjgZdA9YEiAr9q9mAIEkhHBIXy33wWmAIGJu/StOfKekpClZXKZlenFWjrCX0DZgAACIAB9emeOFVpMAK%2bgWEaW8FmawJjlA1ccH9vDVImW64f7ECf3Bhef0QhAmvJicGJzYYvoyryJozZP0UXRp/bEqiI6ZbjTml7wrxklon0qvqBukZJMbFLRQ1j2JdrFNRqTpvjwjBKgUfwsZBA%2bXD9lPTu%2b9zw4OCD3nlrFrFZDAA54yrfCByvefOfmRB715vIhlk6aYnL%2bWR6Rqi/nhB3ZDwpe7otdHXvbhLaiuEDb7LAEdRf8pwJ63MW42jZRPIQva8PzyIDl%2bFrOPQm98NwEAIR9GfUeif4etqBj09tQ1fX%2b61E8JoVxQqCAAGtsZre1nq3XVY5NaN3FYREJdfsqQaKzDx1mWpjrcj4IqkeI2sVger2YnC6UaC5%2bmztMakd4XY2QBWy6nnP6EPGkci0t5M61NB2Gi9hmkPl2gPySk5ZZWBrnKbAvSTg8vODtNqTKPG8/C%2bcneCXWzZZcXmWEWW4Tj4laZtHBUQ3/awSVpybd%2b02qWx8L9%2bvVAQ%2b18/RJezXMfW1d%2bDN043shHuPYfQ5Plb4m75Ps3wkkT6%2bqFcSq2DZZg41ttJIB7Pkh15YIb8j7WFJp6FYjHdYBWDQYVm%2biqvVvPFimqjwcH2lTLVMl2fCJXsRB/8zRyWz8XXqGWJC1orNaio73tAphLj7/Iped6nMeBEQIDPDGbaSU%2b4Nv8Exe7rnO2FZceyA8UzILEgIOmesb3xk%2bHTVOe%2bCOj8pfHH0OanXlxACv7OfdrYWwfxw5CA37b10h2EC";
+    private static String accessToken = "EwBgA8l6BAAURSN/FHlDW5xN74t6GzbtsBBeBUYAASMiWqp%2bEcMIvEUQLb82CbsnR0uJFzElePAp2ppl1%2bwzl%2bH9El7irIauBIAoyfAR5peejYrTgATgTgJ6hp7H%2bZAAU94qKeND/JZry4ssC6K08xMzYH8drD1xKeGvf/xTf%2be/zWfI3sovSmmhOtOjpV6W3v%2bnyKd8NjBizM08J4hE5O4%2b/OpjZeAu1H3kswtM//YDXarpkb7v6vNWnw59TcO6LxeFkjkfDWsd5nOLn6LiP5UIcInXcvzjvP6zhnTbmXQtOsTLYWaT/RP34%2bUEoZFcHHwoYRI5sP3dYsOLoYL2QyK51uTIFyxz%2bDHVRvIc4TXhSVAPtcd6pFH4v0DIiGADZgAACMGU6zDlpyujMAIRj/jKQBM3ycFjsMdgfmlCyy4l9vUnQYm1Q620DBKAgC7GJdEcgbFUOBQzS2alg/9K7ndc7PVGcvC0W%2bOksOj%2bkmZzzjZVXTwMA9yHx0T%2bLpiJ5xiXFvl1L7fmHTjT1cYgygsu5xQHxQvi1f6NiCpmmYnJP%2bNrB9gTnOu%2bO92p4dUjqU7doY%2bjPSAGTjWjJnBKGpEqUuo4%2bBgfoTEU46bdsR7VGopTwOfB0efqH5Z/VH8WdhycUT5CpjFs7rqpLv4N8%2bY/0JUM/vJffJ/%2biShO/Q18w%2bSrLGQxM4F3AjVch3bs8XXd%2bZRXDWlG7m3OB7/iAifx77NX2XrznmvsUR/7RiD4A12f0/NANccSlN9DYrK/784Kds3HKtcl1hYQJycKv%2bk7hGn7YbfXphnLgQgM53ewfoXgZnB0hGBWfwUjEnmXTejXcYGMINhFa1pjOZPPredG7ugCt5d6y8ZN8XbRZB7XZqpmqvXAop1Yu5fPLqLs6HNhaPXpkUIU/g%2b%2bMCEzSfqwykydmYyhpCX9RxkgUXtRND5Ud9MvNaDs2PNDNYaEy0jje2RGzeh/iROPj6%2b%2bZoGZFAqkL6EEmj7vIUUGW9aZg/8zhEXCF3P7bcFdeI/1HFD/cuUNQmMFHkRBh3Jac%2bu/98OTU30eFvIOinGpzOL1fuuFSGW2glnyri9m61Rj1NDezFkyqixEOzyvshYPU7TvFBOUp5JO8YmbnDvutiQS5XRESO7TWh2Mmq2X3WEC";
     private static String accessTokenStr2Find = "access_token=";
 
     private static void parseTokenFromURL(String url) {

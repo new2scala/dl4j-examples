@@ -15,6 +15,23 @@ import java.nio.charset.StandardCharsets;
 
 final class OneDriveHelpers {
 
+    private final static DefaultHttpClient httpClient = new DefaultHttpClient();
+    static void download(String downUrl, ImageView img) {
+        try {
+            HttpResponse resp = httpClient.execute(new HttpGet(downUrl));
+            byte[] bytes = EntityUtils.toByteArray(resp.getEntity());
+
+            ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
+            img.setImage(
+                new Image(bis)
+            );
+            bis.close();
+        }
+        catch (Exception ex) {
+            System.out.println("http req failed 2");
+        }
+    }
+
     static DataHelpers.OneDriveFolderResp testToken(ImageView img) {
         HttpGet hget = new HttpGet(
             //"https://graph.microsoft.com/v1.0/drives/cfb035373190649d/root/children"
@@ -22,7 +39,7 @@ final class OneDriveHelpers {
             "https://graph.microsoft.com/v1.0/drive/root:/Icons64:/children"
             //"https://graph.microsoft.com/v1.0/drive/items/CFB035373190649D!1792/content"
         );
-        DefaultHttpClient httpClient = new DefaultHttpClient();
+
         String authHeader = String.format("bearer {%s}", AuthHelper.getToken());
         hget.setHeader(HttpHeaders.AUTHORIZATION, authHeader);
         //String last = null;
