@@ -4,6 +4,7 @@ import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Insets;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
@@ -27,6 +28,17 @@ public class MainFrame extends Application {
 
     private ImageView _image;
     private BorderPane borderPane;
+
+    private Node folderIcon() {
+        return new ImageView(
+            new Image(getClass().getResourceAsStream("/folder-24.png"))
+        );
+    }
+    private Node fileIcon() {
+        return new ImageView(
+            new Image(getClass().getResourceAsStream("/file-24.png"))
+        );
+    }
 
     @Override
     public void start(Stage primaryStage) {
@@ -160,7 +172,7 @@ public class MainFrame extends Application {
     };
 
     private void createDriveTree() {
-        TreeItem<FolderItem> rootItem = new TreeItem<>(FolderItems.ROOT());
+        TreeItem<FolderItem> rootItem = new TreeItem<>(FolderItems.ROOT(), folderIcon());
         _driveTree = new TreeView<>(rootItem);
         _driveTree.getSelectionModel().selectedItemProperty().addListener(
             new ChangeListener<TreeItem<FolderItem>>() {
@@ -178,7 +190,7 @@ public class MainFrame extends Application {
     private void populateFolderItems(TreeItem<FolderItem> currItem, FolderItem[] items) {
         //TreeItem<FolderItem> root = _driveTree.getRoot();
         for (FolderItem item : items) {
-            TreeItem<FolderItem> trItem = new TreeItem<>(item);
+            TreeItem<FolderItem> trItem = new TreeItem<>(item, item.isFolder() ? folderIcon() : fileIcon());
             currItem.getChildren().add(trItem);
         }
     }
