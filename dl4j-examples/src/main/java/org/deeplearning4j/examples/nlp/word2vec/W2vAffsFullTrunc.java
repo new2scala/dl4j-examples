@@ -67,12 +67,12 @@ public class W2vAffsFullTrunc {
 
         String modelFile = "/media/sf_vmshare/aff-w2v-trunc.model";
         //String modelFile = "/media/sf_vmshare/aff-w2v.model";
-        //File trainingDataPath = new File("/media/sf_vmshare/aff-w2v");
-        File trainingDataPath = new File("/media/sf_vmshare/fp2Affs_uniq_trunc");
+        File trainingDataPath = new File("/media/sf_vmshare/aff-w2v-trunc");
+        //File trainingDataPath = new File("/media/sf_vmshare/fp2Affs_uniq_trunc");
         File mf = new File(modelFile);
 
         Word2Vec vec;
-        int epochs = 10;
+        int epochs = 20;
         int vecSize = 256;
         if (!mf.exists()) {
 

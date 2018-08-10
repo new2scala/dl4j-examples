@@ -20,7 +20,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-final class AuthHelper {
+public final class AuthHelper {
 
     private static String _AuthUrl = "https://login.live.com/oauth20_authorize.srf?client_id=dcfbb7e5-d75f-4726-9201-bb35a438ef9b&scope=files.read%20offline_access&response_type=token&redirect_uri=https://login.live.com/oauth20_desktop.srf";
     private static URI uri = URI.create(_AuthUrl);
@@ -161,7 +161,7 @@ final class AuthHelper {
         return wc;
     }
 
-    private static String accessToken = "EwBgA8l6BAAURSN/FHlDW5xN74t6GzbtsBBeBUYAASMiWqp%2bEcMIvEUQLb82CbsnR0uJFzElePAp2ppl1%2bwzl%2bH9El7irIauBIAoyfAR5peejYrTgATgTgJ6hp7H%2bZAAU94qKeND/JZry4ssC6K08xMzYH8drD1xKeGvf/xTf%2be/zWfI3sovSmmhOtOjpV6W3v%2bnyKd8NjBizM08J4hE5O4%2b/OpjZeAu1H3kswtM//YDXarpkb7v6vNWnw59TcO6LxeFkjkfDWsd5nOLn6LiP5UIcInXcvzjvP6zhnTbmXQtOsTLYWaT/RP34%2bUEoZFcHHwoYRI5sP3dYsOLoYL2QyK51uTIFyxz%2bDHVRvIc4TXhSVAPtcd6pFH4v0DIiGADZgAACMGU6zDlpyujMAIRj/jKQBM3ycFjsMdgfmlCyy4l9vUnQYm1Q620DBKAgC7GJdEcgbFUOBQzS2alg/9K7ndc7PVGcvC0W%2bOksOj%2bkmZzzjZVXTwMA9yHx0T%2bLpiJ5xiXFvl1L7fmHTjT1cYgygsu5xQHxQvi1f6NiCpmmYnJP%2bNrB9gTnOu%2bO92p4dUjqU7doY%2bjPSAGTjWjJnBKGpEqUuo4%2bBgfoTEU46bdsR7VGopTwOfB0efqH5Z/VH8WdhycUT5CpjFs7rqpLv4N8%2bY/0JUM/vJffJ/%2biShO/Q18w%2bSrLGQxM4F3AjVch3bs8XXd%2bZRXDWlG7m3OB7/iAifx77NX2XrznmvsUR/7RiD4A12f0/NANccSlN9DYrK/784Kds3HKtcl1hYQJycKv%2bk7hGn7YbfXphnLgQgM53ewfoXgZnB0hGBWfwUjEnmXTejXcYGMINhFa1pjOZPPredG7ugCt5d6y8ZN8XbRZB7XZqpmqvXAop1Yu5fPLqLs6HNhaPXpkUIU/g%2b%2bMCEzSfqwykydmYyhpCX9RxkgUXtRND5Ud9MvNaDs2PNDNYaEy0jje2RGzeh/iROPj6%2b%2bZoGZFAqkL6EEmj7vIUUGW9aZg/8zhEXCF3P7bcFdeI/1HFD/cuUNQmMFHkRBh3Jac%2bu/98OTU30eFvIOinGpzOL1fuuFSGW2glnyri9m61Rj1NDezFkyqixEOzyvshYPU7TvFBOUp5JO8YmbnDvutiQS5XRESO7TWh2Mmq2X3WEC";
+    private static String accessToken = "EwBgA8l6BAAURSN/FHlDW5xN74t6GzbtsBBeBUYAAeXw2ba9xyxO9jMHbVDcdy1kZHwFnOP8SEIRYKivCLpjlmgMb9DZ/TKu0zujWJqyf7sKY71%2b9BTH7hwF5SyEjQGjv/jUNQ4/eiXIJs0bZtgCPVUXSZPTEhoYPS2fE41tSIpy9W2YkVNmIxBG%2bpFGeP/GpFO/hlsUW9GneHe4RFor4cCua158/KkoLzW9N%2blHWIJMbz56EKgU%2bWd3367XkajlaZmkF3OBuLPwYyzi6Vdnv41pzhcEj1JCl3rCSE0LOrFnJx7utzhRFf5cEfGnzEkcjnhdxM55czoZvnFD9BIQtqKYnkgUGdrzS3mIztgc0EfzMt90juG1vRdJQs4%2bfkMDZgAACJmq22IS71i4MAL53816OnylbGW3y0uNIjpomPAjztnvxb%2bl2uvUY7ohpdYmmg7HG9B%2bRqRxfWnK0v2njPpu6HTIAQ9d1cY2/t/pWb7KWZKEZ%2bgcIApRNDKQO6nF/pPunWqFZsIuv9RcHw2YU3M%2bwb87ub6qbHO6cMld1uy2iejKzHFjhvV4h8U3pXQ%2bupXlwqozB9F0ErZ48PHtkZ9Ww%2bS4IeyMDmO27JmiXPe151JY4%2b6WJX7O68/snRGma9A5Nf20/Xt%2bXY4SFiM/Xc9FqYTeBlBTT3t%2b/JAW02N/ffW7uZh5pBZxhLiKA9oTEk3ezp1dv5rI5zL310sZMT2U53g6Wh0Q//fAT44njQv8OB13DrX6TP4CDjmPqR7UMDKjEWw9A2yYYH/zD0vKung5t9n0HbEMz0xk%2bmWBHTnRnSUdaULdZfcC7GCMuBxNQfLUrxF7t80HjRRGIQc449eusU3vlFLksEINPT30Fo9vNw1kfNe%2bLmYflQrAHZKakfBlby063NJLijyQ8Ueh0oeQ6D/J38PcLbGO%2b%2bhegzy8nh%2bxa6mF6B991myghwBG69ASQ/8OB%2b3yq3cyNN2mAvMWzDK5B3PtRwmwrDJfDSzN8cFV82Y36M03xLjp/urzl6ZdxOuTYV3Pumo6e5VfcAei8sV7cXi8AeJZaVRgrpUIiKtnDfb7pKvVli19u6/fglwKuX0H6M1lEV3zRps4fJ74T95JR17gXJDR88yggzWZsp6v85I6WJ59XDqGeWEC";
     private static String accessTokenStr2Find = "access_token=";
 
     private static void parseTokenFromURL(String url) {
@@ -175,7 +175,7 @@ final class AuthHelper {
         }
     }
 
-    static String getToken() {
+    public static String getToken() {
         return accessToken;
     }
 

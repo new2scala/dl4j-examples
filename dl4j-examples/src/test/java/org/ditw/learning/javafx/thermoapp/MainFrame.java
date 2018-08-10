@@ -3,33 +3,25 @@ package org.ditw.learning.javafx.thermoapp;
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.concurrent.Worker;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.ListView;
-import javafx.scene.control.Slider;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.web.WebView;
 import javafx.stage.Stage;
-import org.bytedeco.javacv.FrameFilter;
-import org.ditw.learning.akkastr.FolderNav;
-import org.ditw.learning.thermoapp.DataHelpers;
-import org.ditw.learning.thermoapp.TestDataHelpers;
+import org.apache.http.HttpResponse;
+import org.ditw.learning.javafx.thermoapp.onedrive.HttpRespHandler;
+import org.ditw.learning.javafx.thermoapp.onedrive.HttpRespHandlerT;
+import org.ditw.learning.thermoapp.*;
+import org.ditw.learning.thermoapp.onedrive.HttpHelper;
+import org.ditw.learning.thermoapp.onedrive.Requests;
 import scala.Option;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
-import java.net.CookieManager;
-import java.net.CookiePolicy;
-import java.net.HttpCookie;
-import java.net.URI;
-import java.util.*;
 
 public class MainFrame extends Application {
 
@@ -139,32 +131,76 @@ public class MainFrame extends Application {
         }
     }
 
-    private void createFileList(DataHelpers.OneDriveFolderResp folder) {
-        VBox vb = new VBox();
-        ListView<DataHelpers.OneDriveFolderItem> folderItems = new ListView<>();
-        folderItems.getItems().addAll(folder.value());
+//    private void createFileList(FolderResp folder) {
+//        VBox vb = new VBox();
+//        ListView<FolderItem> folderItems = new ListView<>();
+//        folderItems.getItems().addAll(folder.value());
+//
+//        folderItems.getSelectionModel().selectedItemProperty().addListener(
+//            new ChangeListener<FolderItem>() {
+//                @Override
+//                public void changed(ObservableValue<? extends DataHelpers.FolderItem> observable, DataHelpers.FolderItem oldValue, DataHelpers.FolderItem newValue) {
+////                    String downloadUrl = newValue.$atmicrosoft$u002Egraph$u002EdownloadUrl();
+////                    OneDriveHelpers.download(downloadUrl, _image);
+//                }
+//            }
+//        );
+//
+//        vb.getChildren().add(folderItems);
+//        borderPane.setLeft(vb);
+//    }
 
-        folderItems.getSelectionModel().selectedItemProperty().addListener(
-            new ChangeListener<DataHelpers.OneDriveFolderItem>() {
+    private final HttpRespHandlerT<FolderItem[]> folderItemsHandler = new HttpRespHandlerT<FolderItem[]>() {
+        public FolderItem[] handle(HttpResponse resp) {
+            FolderItem[] items = HttpHelper.handleFolderItems(resp);
+            TreeItem<FolderItem> currItem = _driveTree.getSelectionModel().getSelectedItem();
+            populateFolderItems(currItem, items);
+            return items;
+        }
+    };
+
+    private void createDriveTree() {
+        TreeItem<FolderItem> rootItem = new TreeItem<>(FolderItems.ROOT());
+        _driveTree = new TreeView<>(rootItem);
+        _driveTree.getSelectionModel().selectedItemProperty().addListener(
+            new ChangeListener<TreeItem<FolderItem>>() {
                 @Override
-                public void changed(ObservableValue<? extends DataHelpers.OneDriveFolderItem> observable, DataHelpers.OneDriveFolderItem oldValue, DataHelpers.OneDriveFolderItem newValue) {
-                    String downloadUrl = newValue.$atmicrosoft$u002Egraph$u002EdownloadUrl();
-                    OneDriveHelpers.download(downloadUrl, _image);
+                public void changed(ObservableValue<? extends TreeItem<FolderItem>> observable, TreeItem<FolderItem> oldValue, TreeItem<FolderItem> newValue) {
+                    if (newValue.getValue().isFolder()) {
+                        Requests.reqFolderItems(newValue.getValue().id(), folderItemsHandler);
+                    }
                 }
             }
         );
-
-        vb.getChildren().add(folderItems);
-        borderPane.setLeft(vb);
+        borderPane.setLeft(_driveTree);
     }
+
+    private void populateFolderItems(TreeItem<FolderItem> currItem, FolderItem[] items) {
+        //TreeItem<FolderItem> root = _driveTree.getRoot();
+        for (FolderItem item : items) {
+            TreeItem<FolderItem> trItem = new TreeItem<>(item);
+            currItem.getChildren().add(trItem);
+        }
+    }
+    private final HttpRespHandler rootDriveHandler = new HttpRespHandler() {
+        @Override
+        public void handle(HttpResponse resp) {
+            FolderItem[] items = HttpHelper.handleDriveRoot(resp);
+            populateFolderItems(_driveTree.getRoot(), items);
+        }
+    };
+
+    private TreeView<FolderItem> _driveTree;
 
     private HBox controlBar() {
 
         Button loadButton = new Button("Open");
 
         loadButton.setOnAction(evt -> {
-            DataHelpers.OneDriveFolderResp folder = OneDriveHelpers.testToken(_image);
-            createFileList(folder);
+            createDriveTree();
+            Requests.reqDriveRoot(rootDriveHandler);
+            //DataHelpers.OneDriveFolderResp folder = OneDriveHelpers.testToken(_image);
+            //createFileList(folder);
             //folder.value()
         });
         Slider slider = new Slider();

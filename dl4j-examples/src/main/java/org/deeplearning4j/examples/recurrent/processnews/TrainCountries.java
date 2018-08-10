@@ -60,7 +60,7 @@ public class TrainCountries {
         DATA_PATH = rootDir;
         WORD_VECTORS_PATH = "/media/sf_vmshare/aff-w2v-trunc.model";
         //String modelPath = rootDir + "country-tr-2layer.model";
-        String modelPath = rootDir + "country-tr-tt.model";
+        String modelPath = rootDir + "country-tr.model";
 
         int batchSize = 128;     //Number of examples in each minibatch
         int nEpochs = 1000;        //Number of epochs (full passes of training data) to train on

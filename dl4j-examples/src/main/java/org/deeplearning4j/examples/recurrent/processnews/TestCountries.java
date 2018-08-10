@@ -43,37 +43,68 @@ public class TestCountries {
 
 
     public static void main(String[] args) throws Exception {
-        String WORD_VECTORS_PATH = "/media/sf_vmshare/aff-w2v-full.model";
-        loadCategoryMap("/media/sf_vmshare/aff-w2v-td/categories.txt");
+        String WORD_VECTORS_PATH = "/media/sf_vmshare/aff-w2v-trunc.model";
+        loadCategoryMap("/media/sf_vmshare/aff-w2v-tr/categories.txt");
         tokenizerFactory = new DefaultTokenizerFactory();
         tokenizerFactory.setTokenPreProcessor(new CommonPreprocessor());
         wordVectors = WordVectorSerializer.readWord2VecModel(new File(WORD_VECTORS_PATH));
 
-        model = ModelSerializer.restoreMultiLayerNetwork("/media/sf_vmshare/aff-w2v-td/country.model");
+        model = ModelSerializer.restoreMultiLayerNetwork("/media/sf_vmshare/aff-w2v-tr/country-tr.model");
 
-        runTests(
-            new String[]{
-                "1 virginia commonwealth university school of nursing richmond virginia",
-                "102nd hospital of chinese pla",
-                "1 gene experiment center institute of applied biochemistry university of tsukuba tsukuba-city 305",
-                "1 direktion pflege und mttb universitätsspital zürich",
-                "11 education centre freeman hospital newcastle upon tyne",
-                "1 best practice advocacy centre new zealand dunedin",
-                "**division of gastroenterology and hepatology medical university of vienna vienna",
-                "1 department of psychology princeton university"
-            },
-            new String[]{
-                "United States",
-                "China",
-                "Japan",
-                "Switzerland",
-                "United Kingdom",
-                "New Zealand",
-                "Austria",
-                "United States"
+        runTests("/media/sf_vmshare/aff-w2v-tr/-1.txt");
+
+//        runTests(
+//            new String[]{
+//                "1 virginia commonwealth university school of nursing richmond virginia",
+//                "102nd hospital of chinese pla",
+//                "1 gene experiment center institute of applied biochemistry university of tsukuba tsukuba-city 305",
+//                "1 direktion pflege und mttb universitätsspital zürich",
+//                "11 education centre freeman hospital newcastle upon tyne",
+//                "1 best practice advocacy centre new zealand dunedin",
+//                "**division of gastroenterology and hepatology medical university of vienna vienna",
+//                "1 department of psychology princeton university"
+//            },
+//            new String[]{
+//                "United States",
+//                "China",
+//                "Japan",
+//                "Switzerland",
+//                "United Kingdom",
+//                "New Zealand",
+//                "Austria",
+//                "United States"
+//            }
+//        );
+
+    }
+
+    private static void runTests(String fileName) throws Exception {
+
+        List<String> lines = IOUtils.readLines(new FileInputStream(fileName), StandardCharsets.UTF_8);
+
+        for (String line : lines) {
+            DataSet ds = prepareTestData(line);
+            INDArray feats = ds.getFeatureMatrix();
+
+            INDArray res = model.output(feats, false);
+            int[] arrSize = res.shape();
+
+            double max = Double.MIN_VALUE;
+            int cat = -1;
+            String expCountryVal = "N/A";
+            for (int j = 0; j < arrSize[1]; j ++) {
+                Double v = (Double)res.getColumn(j).sumNumber();
+                if (max < v) {
+                    max = v;
+                    cat = j;
+                }
+
             }
-        );
-
+            String resCat = categoryMap.get(cat);
+            System.out.println(
+                String.format("%s/%.4f(%s):\t%s", resCat, max, expCountryVal, line)
+            );
+        }
     }
 
     private static void runTests(String[] inputs, String[] expCountries) {

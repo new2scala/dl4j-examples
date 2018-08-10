@@ -14,20 +14,6 @@ object DataHelpers {
     def prev:Option[DataUnit]
   }
 
-  case class OneDriveFolderItem(
-    name:String,
-    //downloadUrl:String
-    `@microsoft.graph.downloadUrl`:String
-  ) {
-    override def toString: String = name
-  }
-
-  case class OneDriveFolderResp(
-    value:Array[OneDriveFolderItem]
-  ) {
-    private val _downloadLinks = value.sortBy(_.name).map(_.`@microsoft.graph.downloadUrl`)
-    def downloadLinks:Array[String] = _downloadLinks
-  }
 
   import FieldSerializer._
 //  private val rename = FieldSerializer[OneDriveFolderItem](
@@ -35,9 +21,9 @@ object DataHelpers {
 //    renameFrom("downloadUrl", "@microsoft.graph.downloadUrl")
 //  )
 
-  def parseOneDriveItemJson(j:String):OneDriveFolderResp = {
+  def parseOneDriveItemJson(j:String):FolderResp = {
     import org.json4s.jackson.JsonMethods._
     implicit val fmt = DefaultFormats //+ rename
-    parse(j).extract[OneDriveFolderResp]
+    parse(j).extract[FolderResp]
   }
 }

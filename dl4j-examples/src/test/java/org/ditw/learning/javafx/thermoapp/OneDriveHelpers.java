@@ -32,48 +32,48 @@ final class OneDriveHelpers {
         }
     }
 
-    static DataHelpers.OneDriveFolderResp testToken(ImageView img) {
-        HttpGet hget = new HttpGet(
-            //"https://graph.microsoft.com/v1.0/drives/cfb035373190649d/root/children"
-            //"https://graph.microsoft.com/v1.0/drive/items/CFB035373190649D!120"
-            "https://graph.microsoft.com/v1.0/drive/root:/Icons64:/children"
-            //"https://graph.microsoft.com/v1.0/drive/items/CFB035373190649D!1792/content"
-        );
-
-        String authHeader = String.format("bearer {%s}", AuthHelper.getToken());
-        hget.setHeader(HttpHeaders.AUTHORIZATION, authHeader);
-        //String last = null;
-        try {
-            HttpResponse resp = httpClient.execute(hget);
-            String respBody = EntityUtils.toString(resp.getEntity(), StandardCharsets.UTF_8);
-            DataHelpers.OneDriveFolderResp folder = DataHelpers.parseOneDriveItemJson(respBody);
-            System.out.println(folder.value().length);
-            return folder;
-
-        //    last = folder.downloadLinks()[folder.downloadLinks().length-1];
-
-        }
-        catch (Exception ex) {
-            System.out.println("http req failed");
-            return null;
-        }
-
-
-//        if (last != null) {
-//            HttpGet getLast = new HttpGet(last);
-//            try {
-//                HttpResponse resp = httpClient.execute(getLast);
-//                byte[] bytes = EntityUtils.toByteArray(resp.getEntity());
+//    static DataHelpers.OneDriveFolderResp testToken(ImageView img) {
+//        HttpGet hget = new HttpGet(
+//            //"https://graph.microsoft.com/v1.0/drives/cfb035373190649d/root/children"
+//            //"https://graph.microsoft.com/v1.0/drive/items/CFB035373190649D!120"
+//            "https://graph.microsoft.com/v1.0/drive/root:/Icons64:/children"
+//            //"https://graph.microsoft.com/v1.0/drive/items/CFB035373190649D!1792/content"
+//        );
 //
-//                ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
-//                img.setImage(
-//                    new Image(bis)
-//                );
-//                bis.close();
-//            }
-//            catch (Exception ex) {
-//                System.out.println("http req failed 2");
-//            }
+//        String authHeader = String.format("bearer {%s}", AuthHelper.getToken());
+//        hget.setHeader(HttpHeaders.AUTHORIZATION, authHeader);
+//        //String last = null;
+//        try {
+//            HttpResponse resp = httpClient.execute(hget);
+//            String respBody = EntityUtils.toString(resp.getEntity(), StandardCharsets.UTF_8);
+//            DataHelpers.OneDriveFolderResp folder = DataHelpers.parseOneDriveItemJson(respBody);
+//            System.out.println(folder.value().length);
+//            return folder;
+//
+//        //    last = folder.downloadLinks()[folder.downloadLinks().length-1];
+//
 //        }
-    }
+//        catch (Exception ex) {
+//            System.out.println("http req failed");
+//            return null;
+//        }
+//
+//
+////        if (last != null) {
+////            HttpGet getLast = new HttpGet(last);
+////            try {
+////                HttpResponse resp = httpClient.execute(getLast);
+////                byte[] bytes = EntityUtils.toByteArray(resp.getEntity());
+////
+////                ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
+////                img.setImage(
+////                    new Image(bis)
+////                );
+////                bis.close();
+////            }
+////            catch (Exception ex) {
+////                System.out.println("http req failed 2");
+////            }
+////        }
+//    }
 }
