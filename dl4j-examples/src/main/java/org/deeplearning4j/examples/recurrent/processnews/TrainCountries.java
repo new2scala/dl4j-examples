@@ -166,6 +166,7 @@ public class TrainCountries {
         System.out.println("Starting training");
 
         for (int i = 0; i < nEpochs; i++) {
+            iTrain.shuffle();
             net.fit(iTrain);
             iTrain.reset();
             System.out.println("Epoch " + i + " complete. Starting evaluation:");

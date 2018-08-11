@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Random;
 
 import static org.nd4j.linalg.indexing.NDArrayIndex.all;
 import static org.nd4j.linalg.indexing.NDArrayIndex.point;
@@ -29,7 +30,7 @@ public class CountryIterator implements DataSetIterator {
     private final int truncateLength;
     private int maxLength;
     private final String dataDirectory;
-    private final List<Pair<String, List<String>>> categoryData = new ArrayList<>();
+    private List<Pair<String, List<String>>> categoryData = new ArrayList<>();
     private int cursor = 0;
     private int totalNews = 0;
     private final TokenizerFactory tokenizerFactory;
@@ -82,6 +83,28 @@ public class CountryIterator implements DataSetIterator {
         }
     }
 
+    public static <T> List<T> shuffleList(List<T> in) {
+        List<T> res = new ArrayList<>(in.size());
+        Random rnd = new Random();
+        int dataCount = in.size();
+        for (int i = 0; i < dataCount; i++) {
+            int nextIdx = rnd.nextInt(in.size());
+            res.add(in.get(nextIdx));
+            in.remove(nextIdx);
+        }
+        return res;
+    }
+
+    public void shuffle() {
+        List<Pair<String, List<String>>> res = new ArrayList<>(categoryData.size());
+        for (Pair<String, List<String>> p : categoryData) {
+            Pair<String, List<String>> p2 = Pair.of(p.getKey(), shuffleList(p.getValue()));
+            res.add(p2);
+        }
+        res = shuffleList(res);
+        categoryData = res;
+    }
+
     private DataSet nextDataSet(int num) throws IOException {
         // Loads news into news list from categoryData List along with category of each news
         List<String> news = new ArrayList<>(num);
@@ -91,8 +114,8 @@ public class CountryIterator implements DataSetIterator {
 
             if (currCategory < categoryData.size()) {
                 Pair<String, List<String>> p = this.categoryData.get(currCategory);
-                if (newsPosition < 0)
-                    System.out.println("ok");
+//                if (newsPosition < 0)
+//                    System.out.println("ok");
                 if (newsPosition >= p.getValue().size()) {
                     currCategory ++;
                     i--;
@@ -260,6 +283,7 @@ public class CountryIterator implements DataSetIterator {
         cursor = 0;
         newsPosition = 0;
         currCategory = 0;
+        //shuffle();
     }
 
     public boolean resetSupported() {

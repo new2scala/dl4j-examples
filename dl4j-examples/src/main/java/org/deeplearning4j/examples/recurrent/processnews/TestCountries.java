@@ -49,7 +49,7 @@ public class TestCountries {
         tokenizerFactory.setTokenPreProcessor(new CommonPreprocessor());
         wordVectors = WordVectorSerializer.readWord2VecModel(new File(WORD_VECTORS_PATH));
 
-        model = ModelSerializer.restoreMultiLayerNetwork("/media/sf_vmshare/aff-w2v-tr/country-tr.model");
+        model = ModelSerializer.restoreMultiLayerNetwork("/media/sf_vmshare/aff-w2v-tr/country-tr-tt.model");
 
         runTests("/media/sf_vmshare/aff-w2v-tr/-1.txt");
 
