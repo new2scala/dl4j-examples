@@ -4,6 +4,7 @@ import java.io.{File, FileInputStream}
 
 import org.apache.commons.io.IOUtils
 import org.ditw.thermapp.DataHelpers.{DataSource, DataUnit}
+import org.ditw.thermapp.onedrive.localcache.CacheHelper
 
 import scala.util.Random
 
@@ -16,13 +17,14 @@ object TestDataHelpers {
 
   val r = new Random
 
-  val mockDataSource = new DataSource {
-    private val imagePath = "/media/sf_vmshare/Icons64"
+  def getSelectedDataSource(folderItem: FolderItem):DataSource =  new DataSource {
+    private val imagePath = s"${CacheHelper.driveCache.localPath}/${folderItem.id}"
 
     private val imagesSorted:IndexedSeq[String] = {
       try {
         //new File(imagePath).listFiles().map(f => URLEncoder.encode(f.getName, "utf-8")).toIndexedSeq
-        new File(imagePath).listFiles().map(_.getName).toIndexedSeq
+        val dir = new File(imagePath)
+        dir.listFiles().map(_.getName).toIndexedSeq
       }
       catch {
         case t:Throwable => {
@@ -50,6 +52,7 @@ object TestDataHelpers {
 
     private def dataUnit(csr:Int):Option[DataUnit] = {
       val fileName = s"$imagePath/${imagesSorted(csr)}"
+      println(s"Getting image [$fileName] ...")
       val fio = new FileInputStream(fileName)
       val res = DataUnit(
         thermoData(csr),

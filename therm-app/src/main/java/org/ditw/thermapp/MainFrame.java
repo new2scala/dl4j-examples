@@ -71,7 +71,7 @@ public class MainFrame extends Application {
                 layout()
             )
         );
-        updateData(TestDataHelpers.mockDataSource().curr());
+        //updateData(TestDataHelpers.mockDataSource().curr());
 
         _driveTreeContextMenu = createDriveTreeContextMenu();
 
@@ -203,6 +203,7 @@ public class MainFrame extends Application {
                 @Override
                 public void changed(ObservableValue<? extends TreeItem<FolderItem>> observable, TreeItem<FolderItem> oldValue, TreeItem<FolderItem> newValue) {
                     if (newValue.getValue().isFolder()) {
+                        currData = TestDataHelpers.getSelectedDataSource(newValue.getValue());
                         Requests.reqFolderItems(newValue.getValue().id(), folderItemsHandler);
                     }
                 }
@@ -238,6 +239,8 @@ public class MainFrame extends Application {
 
     private TreeView<FolderItem> _driveTree;
 
+    private DataHelpers.DataSource currData = null;
+
     private HBox controlBar() {
 
         Button loadButton = new Button("Open");
@@ -259,9 +262,13 @@ public class MainFrame extends Application {
         slider.setBlockIncrement(10);
         Button leftButton = new Button("<");
         leftButton.setOnAction(evt -> {
-            Option<DataHelpers.DataUnit> d = TestDataHelpers.mockDataSource().prev();
-            if (d.isDefined()) {
-                updateData(d.get());
+            TreeItem<FolderItem> selected = _driveTree.getSelectionModel().getSelectedItem();
+            if (selected.getValue().isFolder() && currData != null) {
+                Option<DataHelpers.DataUnit> d =
+                    currData.prev();
+                if (d.isDefined()) {
+                    updateData(d.get());
+                }
             }
 //            _image.setImage(
 //                new Image("file://" + _folderNav.currUrl())
@@ -269,14 +276,15 @@ public class MainFrame extends Application {
         });
         Button rightButton = new Button(">");
         rightButton.setOnAction(evt -> {
-            Option<DataHelpers.DataUnit> d = TestDataHelpers.mockDataSource().next();
-            if (d.isDefined()) {
-                updateData(d.get());
+            TreeItem<FolderItem> selected = _driveTree.getSelectionModel().getSelectedItem();
+            if (selected.getValue().isFolder() && currData != null) {
+                Option<DataHelpers.DataUnit> d =
+                    currData.next();
+                if (d.isDefined()) {
+                    updateData(d.get());
+                }
             }
-//            _folderNav.next();
-//            _image.setImage(
-//                new Image("file://" + _folderNav.currUrl())
-//            );
+
         });
         Button playButton = new Button(">>");
 
