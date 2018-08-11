@@ -1,24 +1,26 @@
-package org.ditw.learning.javafx.thermoapp;
+package org.ditw.thermapp;
 
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import org.apache.http.HttpResponse;
-import org.ditw.learning.javafx.thermoapp.onedrive.HttpRespHandler;
-import org.ditw.learning.javafx.thermoapp.onedrive.HttpRespHandlerT;
-import org.ditw.learning.thermoapp.*;
-import org.ditw.learning.thermoapp.onedrive.HttpHelper;
-import org.ditw.learning.thermoapp.onedrive.Requests;
+import org.ditw.thermapp.onedrive.HttpRespHandler;
+import org.ditw.thermapp.onedrive.HttpRespHandlerT;
+import org.ditw.thermapp.onedrive.HttpHelper;
+import org.ditw.thermapp.onedrive.Requests;
 import scala.Option;
 
 import java.io.ByteArrayInputStream;
@@ -28,6 +30,26 @@ public class MainFrame extends Application {
 
     private ImageView _image;
     private BorderPane borderPane;
+
+    private ContextMenu _driveTreeContextMenu;
+
+    private ContextMenu createDriveTreeContextMenu() {
+        MenuItem item = new MenuItem("cache");
+        item.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                MenuItem src = (MenuItem)event.getSource();
+                FolderItem folder = (FolderItem)src.getUserData();
+                if (folder.isFolder()) {
+                    // todo: handle completion
+                    System.out.println("Start caching ...");
+                    Requests.reqCacheFolderItems(folder.id());
+                }
+            }
+        });
+        ContextMenu menu = new ContextMenu(item);
+        return menu;
+    }
 
     private Node folderIcon() {
         return new ImageView(
@@ -50,6 +72,8 @@ public class MainFrame extends Application {
             )
         );
         updateData(TestDataHelpers.mockDataSource().curr());
+
+        _driveTreeContextMenu = createDriveTreeContextMenu();
 
         primaryStage.show();
     }
@@ -185,6 +209,16 @@ public class MainFrame extends Application {
             }
         );
         borderPane.setLeft(_driveTree);
+
+        _driveTree.setOnContextMenuRequested(new EventHandler<ContextMenuEvent>() {
+            @Override
+            public void handle(ContextMenuEvent event) {
+                for (MenuItem item : _driveTreeContextMenu.getItems()) {
+                    item.setUserData(_driveTree.getSelectionModel().getSelectedItem().getValue());
+                }
+                _driveTreeContextMenu.show(_driveTree, event.getScreenX(), event.getScreenY());
+            }
+        });
     }
 
     private void populateFolderItems(TreeItem<FolderItem> currItem, FolderItem[] items) {

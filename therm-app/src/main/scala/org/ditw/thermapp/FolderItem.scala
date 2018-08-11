@@ -1,4 +1,4 @@
-package org.ditw.learning.thermoapp
+package org.ditw.thermapp
 
 import java.util.UUID
 

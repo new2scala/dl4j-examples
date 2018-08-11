@@ -1,4 +1,4 @@
-package org.ditw.learning.javafx.thermoapp;
+package org.ditw.thermapp;
 
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -8,7 +8,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
-import org.ditw.learning.thermoapp.DataHelpers;
+import org.ditw.thermapp.DataHelpers;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;

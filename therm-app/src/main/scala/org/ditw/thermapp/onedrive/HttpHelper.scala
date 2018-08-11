@@ -1,13 +1,12 @@
-package org.ditw.learning.thermoapp.onedrive
+package org.ditw.thermapp.onedrive
 
-import org.apache.commons.httpclient.HttpClient
 import org.apache.http.HttpResponse
 import org.apache.http.client.methods.HttpUriRequest
 import org.apache.http.impl.client.DefaultHttpClient
 import org.apache.http.util.EntityUtils
-import org.ditw.learning.javafx.thermoapp.onedrive.{HttpRespHandler, HttpRespHandlerT}
-import org.ditw.learning.thermoapp.DataHelpers._
-import org.ditw.learning.thermoapp.FolderItem
+import org.ditw.thermapp.DataHelpers._
+import org.ditw.thermapp.FolderItem
+import org.ditw.thermapp.FolderItem
 
 import concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -30,6 +29,12 @@ object HttpHelper {
       }
     }
   }
+
+  def doReq(req:HttpUriRequest):Future[HttpResponse] = Future{client.execute(req)}
+  def reqContent(req:HttpUriRequest):Future[Array[Byte]] = Future { client.execute(req) }
+    .map(resp => EntityUtils.toByteArray(resp.getEntity))
+  def reqContent(folderItem: FolderItem):Future[Array[Byte]] =
+    Requests.reqContent(folderItem).map(resp => EntityUtils.toByteArray(resp.getEntity))
 
   def doReq[T](req:HttpUriRequest, callback:HttpRespHandlerT[T]):Unit = {
     val fResp:Future[HttpResponse] = Future{client.execute(req)}

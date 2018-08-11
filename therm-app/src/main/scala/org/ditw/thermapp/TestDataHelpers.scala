@@ -1,14 +1,15 @@
-package org.ditw.learning.thermoapp
+package org.ditw.thermapp
 
 import java.io.{File, FileInputStream}
-import java.net.URLEncoder
 
 import org.apache.commons.io.IOUtils
-import org.ditw.learning.javafx.thermoapp.ThermoColorHelper
-import org.ditw.learning.thermoapp.DataHelpers._
+import org.ditw.thermapp.DataHelpers.{DataSource, DataUnit}
 
 import scala.util.Random
 
+/**
+  * Created by dev on 2018-08-11.
+  */
 object TestDataHelpers {
 
   private val thermoDataDim = 8

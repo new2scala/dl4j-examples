@@ -1,4 +1,4 @@
-package org.ditw.learning.javafx.thermoapp.onedrive;
+package org.ditw.thermapp.onedrive;
 
 import org.apache.http.HttpResponse;
 

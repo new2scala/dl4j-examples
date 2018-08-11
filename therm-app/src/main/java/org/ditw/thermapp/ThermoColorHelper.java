@@ -1,4 +1,4 @@
-package org.ditw.learning.javafx.thermoapp;
+package org.ditw.thermapp;
 
 public final class ThermoColorHelper {
     private final static Double _ThermoValMax = 80.0;

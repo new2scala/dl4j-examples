@@ -1,6 +1,6 @@
-package org.ditw.learning.thermoapp
+package org.ditw.thermapp
 
-import org.json4s.{DefaultFormats, FieldSerializer}
+import org.json4s.DefaultFormats
 
 object DataHelpers {
   case class DataUnit(
@@ -13,17 +13,14 @@ object DataHelpers {
     def next:Option[DataUnit]
     def prev:Option[DataUnit]
   }
-
-
-  import FieldSerializer._
 //  private val rename = FieldSerializer[OneDriveFolderItem](
 //    renameTo("@microsoft.graph.downloadUrl", "downloadUrl"),
 //    renameFrom("downloadUrl", "@microsoft.graph.downloadUrl")
 //  )
 
   def parseOneDriveItemJson(j:String):FolderResp = {
-    import org.json4s.jackson.JsonMethods._
     implicit val fmt = DefaultFormats //+ rename
+    import org.json4s.jackson.JsonMethods._
     parse(j).extract[FolderResp]
   }
 }
