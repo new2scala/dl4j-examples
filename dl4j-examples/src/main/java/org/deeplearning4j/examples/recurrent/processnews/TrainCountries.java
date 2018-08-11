@@ -121,7 +121,7 @@ public class TrainCountries {
             int lstmLayerSize = 256;
             MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .updater(
-                    new RmsProp(0.1)
+                    new RmsProp(0.001)
                     //new Nesterovs(0.00001,0.01)
                 )
                 .l2(1e-5)

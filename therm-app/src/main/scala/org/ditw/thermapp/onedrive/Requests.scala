@@ -9,8 +9,8 @@ import org.ditw.thermapp.onedrive.localcache.CacheHelper
 import org.ditw.thermapp.onedrive.localcache.CacheHelper.{FileCache, FolderCache}
 
 import concurrent.ExecutionContext.Implicits.global
-
-import scala.concurrent.Future
+import scala.concurrent.{Await, Future, duration}
+import duration._
 import scala.util.{Failure, Success}
 
 /**
@@ -48,14 +48,22 @@ object Requests {
       .map(HttpHelper.handleFolderItems)
       .andThen {
         case Success(folderItems) => {
-          println(s"Folder Items: ${folderItems.length}, caching 1 ...")
+          println(s"Folder Items: ${folderItems.length}, caching ...")
           if (folderItems.nonEmpty) {
-            val item0 = folderItems(0)
-            HttpHelper.reqContent(item0)
-              .map { bytes =>
-                CacheHelper.cacheFile(bytes, folderId, item0.name)
-                println(s"Done caching [$folderItems/${item0.name}]")
-              }
+            val allReqs = folderItems.toIndexedSeq.map { item =>
+              println(s"Caching ${item.name} in folder [$folderId] ...")
+              HttpHelper.reqContent(item)
+                .map { bytes =>
+                  CacheHelper.cacheFile(bytes, folderId, item.name)
+                }
+            }
+            val f = Future.sequence(allReqs)
+            Await.ready(f, 20 seconds)
+            println(s"Done caching [${folderItems.length}] items")
+            //folderItems
+//            .onComplete{
+//              case Success(_) => println(s"Done caching [$folderItems/${item0.name}]")
+//              case Failure(t) => println(s"Failed to cache: ${t.getMessage}")
           }
         }
       }

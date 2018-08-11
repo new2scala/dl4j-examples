@@ -30,7 +30,9 @@ object HttpHelper {
     }
   }
 
-  def doReq(req:HttpUriRequest):Future[HttpResponse] = Future{client.execute(req)}
+  def doReq(req:HttpUriRequest):Future[HttpResponse] = {
+    Future{new DefaultHttpClient().execute(req)}
+  }
   def reqContent(req:HttpUriRequest):Future[Array[Byte]] = Future { client.execute(req) }
     .map(resp => EntityUtils.toByteArray(resp.getEntity))
   def reqContent(folderItem: FolderItem):Future[Array[Byte]] =
