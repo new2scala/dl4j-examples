@@ -24,6 +24,7 @@ import org.deeplearning4j.ui.api.UIServer;
 import org.deeplearning4j.ui.stats.StatsListener;
 import org.deeplearning4j.ui.storage.InMemoryStatsStorage;
 import org.deeplearning4j.util.ModelSerializer;
+import org.joda.time.DateTime;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
@@ -62,9 +63,9 @@ public class TrainCountries {
         //String modelPath = rootDir + "country-tr-2layer.model";
         String modelPath = rootDir + "country-tr.model";
 
-        int batchSize = 128;     //Number of examples in each minibatch
+        int batchSize = 64;     //Number of examples in each minibatch
         int nEpochs = 1000;        //Number of epochs (full passes of training data) to train on
-        int truncateReviewsToLength = 20;  //Truncate reviews with length (# words) greater than this
+        int truncateReviewsToLength = 15;  //Truncate reviews with length (# words) greater than this
 
         //DataSetIterators for training and testing respectively
         //Using AsyncDataSetIterator to do data loading in a separate thread; this may improve performance vs. waiting for data to load
@@ -86,14 +87,14 @@ public class TrainCountries {
             .train(true)
             .build();
 
-//        CountryIterator iTest = new CountryIterator.Builder()
-//            .dataDirectory(DATA_PATH)
-//            .wordVectors(wordVectors)
-//            .batchSize(batchSize)
-//            .tokenizerFactory(tokenizerFactory)
-//            .truncateLength(truncateReviewsToLength)
-//            .train(false)
-//            .build();
+        CountryIterator iTest = new CountryIterator.Builder()
+            .dataDirectory(DATA_PATH)
+            .wordVectors(wordVectors)
+            .batchSize(batchSize)
+            .tokenizerFactory(tokenizerFactory)
+            .truncateLength(truncateReviewsToLength)
+            .train(false)
+            .build();
 
         //DataSetIterator train = new AsyncDataSetIterator(iTrain,1);
         //DataSetIterator test = new AsyncDataSetIterator(iTest,1);
@@ -114,14 +115,17 @@ public class TrainCountries {
                 inputs,
                 expResults
             );
+//            System.out.println("Evaluating existing model ...");
+//            evaluateTests(net, iTest);
+
         }
         else {
             System.out.println("------------- Creating model");
             //Set up network configuration
-            int lstmLayerSize = 256;
+            int lstmLayerSize = 128;
             MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .updater(
-                    new RmsProp(0.001)
+                    new RmsProp(0.002)
                     //new Nesterovs(0.00001,0.01)
                 )
                 .l2(1e-5)
@@ -129,9 +133,9 @@ public class TrainCountries {
                 .gradientNormalization(GradientNormalization.ClipElementWiseAbsoluteValue).gradientNormalizationThreshold(1.0)
                 .list()
                 .layer(0, new LSTM.Builder().nIn(inputNeurons).nOut(lstmLayerSize)
-                    .activation(Activation.SOFTSIGN).build())
+                    .activation(Activation.TANH).build())
                 .layer(1, new LSTM.Builder().nIn(lstmLayerSize).nOut(lstmLayerSize)
-                    .activation(Activation.SOFTSIGN).build())
+                    .activation(Activation.TANH).build())
                 .layer(2, new RnnOutputLayer.Builder().activation(Activation.SOFTMAX)
                     .lossFunction(LossFunctions.LossFunction.MCXENT).nIn(lstmLayerSize).nOut(outputs).build())
                 .pretrain(false)
@@ -172,8 +176,9 @@ public class TrainCountries {
             System.out.println("Epoch " + i + " complete. Starting evaluation:");
 
 //            //Run evaluation. This is on 25k reviews, so can take some time
-//            Evaluation evaluation = net.evaluate(iTest);
-//            System.out.println(evaluation.stats());
+            if (nEpochs % 10 == 9) {
+                evaluateTests(net, iTest);
+            }
 
             ModelSerializer.writeModel(net, modelPath, true);
 
@@ -185,6 +190,15 @@ public class TrainCountries {
         }
 
         System.out.println("----- Example complete -----");
+    }
+
+    private static void evaluateTests(MultiLayerNetwork net, CountryIterator iTest) {
+        long start = DateTime.now().getMillis();
+        iTest.reset();
+        Evaluation evaluation = net.evaluate(iTest);
+        System.out.println(evaluation.stats());
+        long duration = DateTime.now().getMillis() - start;
+        System.out.println(String.format("Evaluation time: %.2f", duration / 1000.0));
     }
 
     private static Map<Integer, String> categoryMap;

@@ -72,8 +72,8 @@ public class W2vAffsFullTrunc {
         File mf = new File(modelFile);
 
         Word2Vec vec;
-        int epochs = 20;
-        int vecSize = 256;
+        int epochs = 25;
+        int vecSize = 128;
         if (!mf.exists()) {
 
             // manual creation of VocabCache and WeightLookupTable usually isn't necessary
