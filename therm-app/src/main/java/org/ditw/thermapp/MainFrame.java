@@ -240,7 +240,7 @@ public class MainFrame extends Application {
     private TreeView<FolderItem> _driveTree;
 
     private DataHelpers.DataSource currData = null;
-
+    Slider _slider;
     private HBox controlBar() {
 
         Button loadButton = new Button("Open");
@@ -254,30 +254,29 @@ public class MainFrame extends Application {
         });
         Slider slider = new Slider();
         slider.setMin(0);
+        slider.setPrefWidth(600);
         slider.setMax(100);
         slider.setValue(40);
         slider.setMajorTickUnit(10);
         slider.setMinorTickCount(5);
         slider.setShowTickMarks(true);
         slider.setBlockIncrement(10);
+        _slider = slider;
         Button leftButton = new Button("<");
         leftButton.setOnAction(evt -> {
             TreeItem<FolderItem> selected = _driveTree.getSelectionModel().getSelectedItem();
-            if (selected.getValue().isFolder() && currData != null) {
+            if (selected != null && selected.getValue().isFolder() && currData != null) {
                 Option<DataHelpers.DataUnit> d =
                     currData.prev();
                 if (d.isDefined()) {
                     updateData(d.get());
                 }
             }
-//            _image.setImage(
-//                new Image("file://" + _folderNav.currUrl())
-//            );
         });
         Button rightButton = new Button(">");
         rightButton.setOnAction(evt -> {
             TreeItem<FolderItem> selected = _driveTree.getSelectionModel().getSelectedItem();
-            if (selected.getValue().isFolder() && currData != null) {
+            if (selected != null && selected.getValue().isFolder() && currData != null) {
                 Option<DataHelpers.DataUnit> d =
                     currData.next();
                 if (d.isDefined()) {
@@ -287,6 +286,14 @@ public class MainFrame extends Application {
 
         });
         Button playButton = new Button(">>");
+        playButton.setOnAction(evt -> {
+            TreeItem<FolderItem> selected = _driveTree.getSelectionModel().getSelectedItem();
+            if (selected != null && selected.getValue().isFolder() && currData != null) {
+                currData.play(() -> {
+                    updateData(currData.curr());
+                });
+            }
+        });
 
         HBox res = new HBox();
 

@@ -12,6 +12,7 @@ object DataHelpers {
     def curr:DataUnit
     def next:Option[DataUnit]
     def prev:Option[DataUnit]
+    def play(tickHandler: PlayTickHandler):Unit
   }
 //  private val rename = FieldSerializer[OneDriveFolderItem](
 //    renameTo("@microsoft.graph.downloadUrl", "downloadUrl"),

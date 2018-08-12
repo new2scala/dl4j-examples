@@ -1,11 +1,19 @@
 package org.ditw.thermapp
 
 import java.io.{File, FileInputStream}
+import java.nio.charset.StandardCharsets
 
+import akka.{Done, NotUsed}
+import akka.actor.ActorSystem
+import akka.stream.ActorMaterializer
+import akka.stream.scaladsl.{Sink, Source}
 import org.apache.commons.io.IOUtils
 import org.ditw.thermapp.DataHelpers.{DataSource, DataUnit}
 import org.ditw.thermapp.onedrive.localcache.CacheHelper
 
+import scala.concurrent.Future
+import scala.concurrent.duration._
+import concurrent.ExecutionContext.Implicits.global
 import scala.util.Random
 
 /**
@@ -18,6 +26,7 @@ object TestDataHelpers {
   val r = new Random
 
   def getSelectedDataSource(folderItem: FolderItem):DataSource =  new DataSource {
+
     private val imagePath = s"${CacheHelper.driveCache.localPath}/${folderItem.id}"
 
     private val imagesSorted:IndexedSeq[String] = {
@@ -80,6 +89,27 @@ object TestDataHelpers {
 
     override def curr: DataUnit = {
       dataUnit(cursor).get
+    }
+
+    def play(tickHandler: PlayTickHandler):Unit = {
+      implicit val system = ActorSystem("filesys")
+      implicit val mat = ActorMaterializer()
+      val indexSource:Source[Int, NotUsed] = Source(imagesSorted.indices)
+      val done:Future[Done] = indexSource
+        .throttle(1, 1 seconds)
+        .runWith(
+          Sink.foreach { _ =>
+            tickHandler.handle()
+            next
+//            val fstr = new FileInputStream(f)
+//            val fl = IOUtils.lineIterator(fstr, StandardCharsets.UTF_8).next()
+//            println(s"$f:\t$fl")
+//            fstr.close()
+          }
+      )
+
+      done.onComplete(_ => system.terminate())
+
     }
   }
 
