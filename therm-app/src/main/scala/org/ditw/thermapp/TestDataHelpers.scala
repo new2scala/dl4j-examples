@@ -79,6 +79,18 @@ object TestDataHelpers {
       else None
     }
 
+    override def moveNext: Unit = {
+      if (cursor < imagesSorted.size-1) {
+        cursor += 1
+      }
+    }
+
+    override def movePref: Unit = {
+      if (cursor > 0) {
+        cursor -= 1
+      }
+    }
+
     override def prev: Option[DataUnit] = {
       if (cursor > 0) {
         cursor -= 1
@@ -94,17 +106,13 @@ object TestDataHelpers {
     def play(tickHandler: PlayTickHandler):Unit = {
       implicit val system = ActorSystem("filesys")
       implicit val mat = ActorMaterializer()
-      val indexSource:Source[Int, NotUsed] = Source(imagesSorted.indices)
+      val indexSource:Source[Int, NotUsed] = Source(cursor until imagesSorted.size)
       val done:Future[Done] = indexSource
-        .throttle(1, 1 seconds)
+        .throttle(1, 0.2 seconds)
         .runWith(
           Sink.foreach { _ =>
             tickHandler.handle()
-            next
-//            val fstr = new FileInputStream(f)
-//            val fl = IOUtils.lineIterator(fstr, StandardCharsets.UTF_8).next()
-//            println(s"$f:\t$fl")
-//            fstr.close()
+            moveNext
           }
       )
 

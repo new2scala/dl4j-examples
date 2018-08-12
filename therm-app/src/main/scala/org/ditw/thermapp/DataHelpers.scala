@@ -10,7 +10,9 @@ object DataHelpers {
 
   trait DataSource {
     def curr:DataUnit
+    def movePref:Unit
     def next:Option[DataUnit]
+    def moveNext:Unit
     def prev:Option[DataUnit]
     def play(tickHandler: PlayTickHandler):Unit
   }

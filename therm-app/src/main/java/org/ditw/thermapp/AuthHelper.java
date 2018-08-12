@@ -126,6 +126,7 @@ public final class AuthHelper {
 
                                                 et.dispatchEvent(tt);
                                                 loginInput.setValue("jiajiwu@live.com");
+                                                //form.submit();
 //                                                loginInput.setAttribute("placeholder", "");
                                                 //loginInput.setAttribute("value", "jiajiwu@live.com");
 //                                                Node v = emailLogin.getAttributes().getNamedItem("value");
