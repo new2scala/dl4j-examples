@@ -43,15 +43,18 @@ public class TestCountries {
 
 
     public static void main(String[] args) throws Exception {
-        String WORD_VECTORS_PATH = "/media/sf_vmshare/aff-w2v-trunc.model";
-        loadCategoryMap("/media/sf_vmshare/aff-w2v-tr/categories.txt");
+        String workingDir = "Y:\\vmshare\\";
+        String WORD_VECTORS_PATH = workingDir + "aff-w2v-trunc.model";
+        String projDir = workingDir + "aff-w2v-tr\\";
+
+        loadCategoryMap(projDir + "categories.txt");
         tokenizerFactory = new DefaultTokenizerFactory();
         tokenizerFactory.setTokenPreProcessor(new CommonPreprocessor());
         wordVectors = WordVectorSerializer.readWord2VecModel(new File(WORD_VECTORS_PATH));
 
-        model = ModelSerializer.restoreMultiLayerNetwork("/media/sf_vmshare/aff-w2v-tr/country-tr-tt.model");
+        model = ModelSerializer.restoreMultiLayerNetwork(projDir + "country-tr-0.05-ep26.model");
 
-        runTests("/media/sf_vmshare/aff-w2v-tr/-1.txt");
+        runTests(projDir + "-1.txt");
 
 //        runTests(
 //            new String[]{
@@ -84,6 +87,8 @@ public class TestCountries {
 
         for (String line : lines) {
             DataSet ds = prepareTestData(line);
+            if (ds == null)
+                continue;
             INDArray feats = ds.getFeatureMatrix();
 
             INDArray res = model.output(feats, false);
@@ -113,6 +118,8 @@ public class TestCountries {
             String expCountry = expCountries[i];
             int expCat = revCategoryMap.get(expCountry);
             DataSet ds = prepareTestData(input);
+            if (ds == null)
+                continue;
             INDArray feats = ds.getFeatureMatrix();
 
             INDArray res = model.output(feats, false);
@@ -154,6 +161,10 @@ public class TestCountries {
             }
             allTokens.add(tokensFiltered);
             maxLength = Math.max(maxLength, tokensFiltered.size());
+        }
+
+        if (maxLength <= 0) {
+            return null;
         }
 
         INDArray features = Nd4j.create(news.size(), wordVectors.lookupTable().layerSize(), maxLength);

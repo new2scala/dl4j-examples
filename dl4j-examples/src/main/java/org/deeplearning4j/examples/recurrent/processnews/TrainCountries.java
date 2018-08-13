@@ -57,11 +57,12 @@ public class TrainCountries {
 
 
     public static void main(String[] args) throws Exception {
-        String rootDir = "/media/sf_vmshare/aff-w2v-tr/";
-        DATA_PATH = rootDir;
-        WORD_VECTORS_PATH = "/media/sf_vmshare/aff-w2v-trunc.model";
+        String workingDir = "Y:\\vmshare\\";
+        String projDir = workingDir + "aff-w2v-tr\\";
+        DATA_PATH = projDir;
+        WORD_VECTORS_PATH = workingDir + "aff-w2v-trunc.model";
         //String modelPath = rootDir + "country-tr-2layer.model";
-        String modelPath = rootDir + "country-tr.model";
+        String modelPath = projDir + "country-tr-cuda.model";
 
         int batchSize = 128;     //Number of examples in each minibatch
         int nEpochs = 1000;        //Number of epochs (full passes of training data) to train on
@@ -73,7 +74,7 @@ public class TrainCountries {
         wordVectors = WordVectorSerializer.readWord2VecModel(new File(WORD_VECTORS_PATH));
         log.info("Done loading w2v");
 
-        loadCategoryMap(rootDir + "categories.txt");
+        loadCategoryMap(projDir + "categories.txt");
 
         tokenizerFactory = new DefaultTokenizerFactory();
         tokenizerFactory.setTokenPreProcessor(new CommonPreprocessor());
