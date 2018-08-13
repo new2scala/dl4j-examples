@@ -63,7 +63,7 @@ public class TrainCountries {
         //String modelPath = rootDir + "country-tr-2layer.model";
         String modelPath = rootDir + "country-tr.model";
 
-        int batchSize = 64;     //Number of examples in each minibatch
+        int batchSize = 128;     //Number of examples in each minibatch
         int nEpochs = 1000;        //Number of epochs (full passes of training data) to train on
         int truncateReviewsToLength = 15;  //Truncate reviews with length (# words) greater than this
 
@@ -125,7 +125,7 @@ public class TrainCountries {
             int lstmLayerSize = 128;
             MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .updater(
-                    new RmsProp(0.002)
+                    new RmsProp(0.05)
                     //new Nesterovs(0.00001,0.01)
                 )
                 .l2(1e-5)
@@ -176,7 +176,7 @@ public class TrainCountries {
             System.out.println("Epoch " + i + " complete. Starting evaluation:");
 
 //            //Run evaluation. This is on 25k reviews, so can take some time
-            if (nEpochs % 10 == 9) {
+            if (i % 10 == 9) {
                 evaluateTests(net, iTest);
             }
 
@@ -196,7 +196,7 @@ public class TrainCountries {
         long start = DateTime.now().getMillis();
         iTest.reset();
         Evaluation evaluation = net.evaluate(iTest);
-        System.out.println(evaluation.stats());
+        System.out.println(evaluation.stats(false, true));
         long duration = DateTime.now().getMillis() - start;
         System.out.println(String.format("Evaluation time: %.2f", duration / 1000.0));
     }
