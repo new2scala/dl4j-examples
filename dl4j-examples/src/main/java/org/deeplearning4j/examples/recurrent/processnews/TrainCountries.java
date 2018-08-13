@@ -177,7 +177,8 @@ public class TrainCountries {
             System.out.println("Epoch " + i + " complete. Starting evaluation:");
 
 //            //Run evaluation. This is on 25k reviews, so can take some time
-            if (i % 10 == 9) {
+            int evaluationPer = 30;
+            if (i % evaluationPer == evaluationPer-1) {
                 evaluateTests(net, iTest);
             }
 

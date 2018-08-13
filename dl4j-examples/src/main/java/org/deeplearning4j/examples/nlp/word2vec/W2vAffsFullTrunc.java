@@ -65,14 +65,15 @@ public class W2vAffsFullTrunc {
 
     public static void main(String[] args) throws Exception {
 
-        String modelFile = "/media/sf_vmshare/aff-w2v-trunc.model";
+        String workingDir = "Y:\\vmshare\\aff-w2v-tr\\";
+        String modelFile = workingDir + "aff-full.model";
         //String modelFile = "/media/sf_vmshare/aff-w2v.model";
-        File trainingDataPath = new File("/media/sf_vmshare/aff-w2v-trunc");
-        //File trainingDataPath = new File("/media/sf_vmshare/fp2Affs_uniq_trunc");
+        //File trainingDataPath = new File("/media/sf_vmshare/aff-w2v-trunc");
+        File trainingDataPath = new File("Y:\\vmshare\\fp2Affs_uniq_trunc");
         File mf = new File(modelFile);
 
         Word2Vec vec;
-        int epochs = 25;
+        int epochs = 1;
         int vecSize = 128;
         if (!mf.exists()) {
 
