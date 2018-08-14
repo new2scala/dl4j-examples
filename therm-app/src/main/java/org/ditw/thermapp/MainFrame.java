@@ -1,5 +1,6 @@
 package org.ditw.thermapp;
 
+import akka.stream.impl.fusing.Fold;
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -25,6 +26,7 @@ import scala.Option;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.*;
 
 public class MainFrame extends Application {
 
@@ -190,7 +192,17 @@ public class MainFrame extends Application {
         public FolderItem[] handle(HttpResponse resp) {
             FolderItem[] items = HttpHelper.handleFolderItems(resp);
             TreeItem<FolderItem> currItem = _driveTree.getSelectionModel().getSelectedItem();
-            populateFolderItems(currItem, items);
+            Set<String> children = new HashSet<>(currItem.getChildren().size());
+            for (TreeItem<FolderItem> child : currItem.getChildren()) {
+                children.add(child.getValue().name());
+            }
+            List<FolderItem> filtered = new ArrayList<>(items.length);
+            for (FolderItem item : items) {
+                if (!children.contains(item.name())) {
+                    filtered.add(item);
+                }
+            }
+            populateFolderItems(currItem, filtered);
             return items;
         }
     };
@@ -222,7 +234,7 @@ public class MainFrame extends Application {
         });
     }
 
-    private void populateFolderItems(TreeItem<FolderItem> currItem, FolderItem[] items) {
+    private void populateFolderItems(TreeItem<FolderItem> currItem, List<FolderItem> items) {
         //TreeItem<FolderItem> root = _driveTree.getRoot();
         for (FolderItem item : items) {
             TreeItem<FolderItem> trItem = new TreeItem<>(item, item.isFolder() ? folderIcon() : fileIcon());
@@ -233,7 +245,7 @@ public class MainFrame extends Application {
         @Override
         public void handle(HttpResponse resp) {
             FolderItem[] items = HttpHelper.handleDriveRoot(resp);
-            populateFolderItems(_driveTree.getRoot(), items);
+            populateFolderItems(_driveTree.getRoot(), Arrays.asList(items));
         }
     };
 

@@ -68,9 +68,8 @@ public class W2vAffsFullTrunc {
         String workingDir = "Y:\\vmshare\\fp2Affs-w2v\\";
         //String modelFile = workingDir + "aff-w2v.model";
         //File trainingDataPath = new File("Y:\\vmshare\\aff-w2v-trunc");
-        String modelFile = workingDir + "aff-full.model";
+        File modelFile = new File(workingDir + "aff-full.model");
         File trainingDataPath = new File("Y:\\vmshare\\fp2Affs_uniq_trunc");
-        File mf = new File(modelFile);
 
         String vocabDir = "Y:\\vmshare\\fp2Affs_uniq_trunc_freq";
 
@@ -78,47 +77,47 @@ public class W2vAffsFullTrunc {
 
         Word2Vec vec;
 
-        int epochs = 1;
-        int vecSize = 256;
+        int epochs = 20;
+        int vecSize = 128;
 
-        VocabCache<VocabWord> cache = new AbstractCache<>();
+        VocabCache<VocabWord> cache;
         WeightLookupTable<VocabWord> table;
-        if (useVocabFrom.isEmpty()) {
+        if (!modelFile.exists()) {
+            cache = new AbstractCache<>();
             table = new InMemoryLookupTable.Builder<VocabWord>()
                 .vectorLength(vecSize)
                 .useAdaGrad(false)
                 .cache(cache).build();
         }
         else {
-            Word2Vec tmp = WordVectorSerializer.readWord2VecModel(useVocabFrom);
+            Word2Vec tmp = WordVectorSerializer.readWord2VecModel(modelFile);
             table = tmp.getLookupTable();
             cache = table.getVocabCache();
-
         }
 
-
-        log.info("Loading model....");
-        vec = WordVectorSerializer.readWord2VecModel(modelFile);
-        evaluateSamples(vec);
-        vec.getConfiguration().setEpochs(epochs);
-
-//        log.info("Creating model....");
-//        vec = new Word2Vec.Builder()
-//            .minWordFrequency(10)
-//            .iterations(1)
-//            .epochs(epochs)
-//            .layerSize(vecSize)
-//            .seed(1234)
-//            .windowSize(5)
-//            .lookupTable(table)
-//            .vocabCache(cache)
-//            .learningRate(0.05)
-//            .minLearningRate(1e-5)
-//            .build();
-//        vec.setLookupTable(table);
-//        vec.setVocab(table.getVocabCache());
-//        WordVectorSerializer.writeWord2VecModel(vec, modelFile);
+//
+//        log.info("Loading model....");
 //        vec = WordVectorSerializer.readWord2VecModel(modelFile);
+//        evaluateSamples(vec);
+//        //vec.getConfiguration().setEpochs(epochs);
+
+        log.info("Creating model....");
+        vec = new Word2Vec.Builder()
+            .minWordFrequency(10)
+            .iterations(1)
+            .epochs(epochs)
+            .layerSize(vecSize)
+            .seed(1234)
+            .windowSize(5)
+            .lookupTable(table)
+            .vocabCache(cache)
+            .learningRate(0.05)
+            .minLearningRate(1e-5)
+            .build();
+        vec.setLookupTable(table);
+        vec.setVocab(table.getVocabCache());
+        WordVectorSerializer.writeWord2VecModel(vec, modelFile);
+        vec = WordVectorSerializer.readWord2VecModel(modelFile);
 
 
         int round = 0;
