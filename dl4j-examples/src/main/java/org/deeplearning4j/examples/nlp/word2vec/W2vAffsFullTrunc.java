@@ -26,7 +26,7 @@ import java.util.List;
 public class W2vAffsFullTrunc {
     private static Logger log = LoggerFactory.getLogger(W2VAffsFull.class);
 
-    private static void trainOnce(Word2Vec w2v, File trainingDataPath, int epochs) throws Exception {
+    private static void trainOnce(Word2Vec w2v, File trainingDataPath) throws Exception {
         // Strip white space before and after for each line
         SentenceIterator iter = new FileSentenceIterator(trainingDataPath);
         //SentenceIterator iter = new BasicLineIterator(trainingDataPath);
@@ -43,7 +43,7 @@ public class W2vAffsFullTrunc {
 
         w2v.setTokenizerFactory(t);
         w2v.setSentenceIterator(iter);
-        w2v.getConfiguration().setEpochs(epochs);
+        //w2v.getConfiguration().setEpochs(epochs);
         //w2v.getConfiguration().setIterations(iterations);
 
         log.info("Fitting Word2Vec model....");
@@ -65,55 +65,78 @@ public class W2vAffsFullTrunc {
 
     public static void main(String[] args) throws Exception {
 
-        String workingDir = "Y:\\vmshare\\aff-w2v-tr\\";
+        String workingDir = "Y:\\vmshare\\fp2Affs-w2v\\";
+        //String modelFile = workingDir + "aff-w2v.model";
+        //File trainingDataPath = new File("Y:\\vmshare\\aff-w2v-trunc");
         String modelFile = workingDir + "aff-full.model";
-        //String modelFile = "/media/sf_vmshare/aff-w2v.model";
-        //File trainingDataPath = new File("/media/sf_vmshare/aff-w2v-trunc");
         File trainingDataPath = new File("Y:\\vmshare\\fp2Affs_uniq_trunc");
         File mf = new File(modelFile);
 
-        Word2Vec vec;
-        int epochs = 1;
-        int vecSize = 128;
-        if (!mf.exists()) {
+        String vocabDir = "Y:\\vmshare\\fp2Affs_uniq_trunc_freq";
 
-            // manual creation of VocabCache and WeightLookupTable usually isn't necessary
-            // but in this case we'll need them
-            VocabCache<VocabWord> cache = new AbstractCache<>();
-            WeightLookupTable<VocabWord> table = new InMemoryLookupTable.Builder<VocabWord>()
+        String useVocabFrom = "Y:\\vmshare\\aff-w2v-tr\\aff-full.model";
+
+        Word2Vec vec;
+
+        int epochs = 1;
+        int vecSize = 256;
+
+        VocabCache<VocabWord> cache = new AbstractCache<>();
+        WeightLookupTable<VocabWord> table;
+        if (useVocabFrom.isEmpty()) {
+            table = new InMemoryLookupTable.Builder<VocabWord>()
                 .vectorLength(vecSize)
                 .useAdaGrad(false)
                 .cache(cache).build();
-
-            log.info("Creating model....");
-            vec = new Word2Vec.Builder()
-                .minWordFrequency(10)
-                .iterations(1)
-                .epochs(epochs)
-                .layerSize(vecSize)
-                .seed(1234)
-                .windowSize(5)
-                .lookupTable(table)
-                .vocabCache(cache)
-                .build();
-
         }
         else {
-            vec = WordVectorSerializer.readWord2VecModel(modelFile);
-            evaluateSamples(vec);
+            Word2Vec tmp = WordVectorSerializer.readWord2VecModel(useVocabFrom);
+            table = tmp.getLookupTable();
+            cache = table.getVocabCache();
+
         }
+
+
+        log.info("Creating model....");
+        vec = new Word2Vec.Builder()
+            .minWordFrequency(10)
+            .iterations(1)
+            .epochs(epochs)
+            .layerSize(vecSize)
+            .seed(1234)
+            .windowSize(5)
+            .lookupTable(table)
+            .vocabCache(cache)
+            .learningRate(0.05)
+            .minLearningRate(0.001)
+            .build();
+
 
         int round = 0;
-        while (true) {
+//        while (true) {
 
-            log.info("------------Uptraining round {}", round++);
-            trainOnce(vec, trainingDataPath, epochs);
+        //log.info("------------ Uptraining round {}", round++);
+//        log.info("Building vocab using [{}]", vocabDir);
+//            trainOnce(vec, new File(vocabDir));
+//        WordVectorSerializer.writeWord2VecModel(vec, modelFile);
+//
+//        vec = WordVectorSerializer.readWord2VecModel(modelFile);
+        vec.setLookupTable(table);
+        vec.setVocab(table.getVocabCache());
+        WordVectorSerializer.writeWord2VecModel(vec, modelFile);
+        vec = WordVectorSerializer.readWord2VecModel(modelFile);
+//        vec.getConfiguration().setLearningRate(0.05);
+//        vec.getConfiguration().setMinLearningRate(1e-5);
+
+        log.info("Start training using [{}]", trainingDataPath);
+        trainOnce(vec, trainingDataPath);
+
             evaluateSamples(vec);
-            log.info("Writing word vectors to text file....");
+            log.info("Writing word vectors to model file {} ....", modelFile);
             WordVectorSerializer.writeWord2VecModel(vec, modelFile);
 
-            vec = WordVectorSerializer.readWord2VecModel(modelFile);
-        }
+            //vec = WordVectorSerializer.readWord2VecModel(modelFile);
+//        }
 
 
         // TODO resolve missing UiServer
