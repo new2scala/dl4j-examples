@@ -52,7 +52,7 @@ public class TestCountries {
         tokenizerFactory.setTokenPreProcessor(new CommonPreprocessor());
         wordVectors = WordVectorSerializer.readWord2VecModel(new File(WORD_VECTORS_PATH));
 
-        model = ModelSerializer.restoreMultiLayerNetwork(projDir + "country-tr-0.05-ep26.model");
+        model = ModelSerializer.restoreMultiLayerNetwork(projDir + "country-tr-cuda.model");
 
         runTests(projDir + "-1.txt");
 

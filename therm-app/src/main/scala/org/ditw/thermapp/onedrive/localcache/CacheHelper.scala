@@ -20,7 +20,7 @@ object CacheHelper {
 
   case class FileCache(relLocalPath:String, name:String)
 
-  val driveCache = DriveCache("/media/sf_vmshare/onedriveCache")
+  val driveCache = DriveCache("Y:\\vmshare\\onedriveCache")
 
   def cacheFolder(relLocalPath:String, files:Array[FileCache]):FolderCache = {
     FolderCache(relLocalPath, driveCache, files)

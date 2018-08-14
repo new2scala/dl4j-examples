@@ -97,19 +97,28 @@ public class W2vAffsFullTrunc {
         }
 
 
-        log.info("Creating model....");
-        vec = new Word2Vec.Builder()
-            .minWordFrequency(10)
-            .iterations(1)
-            .epochs(epochs)
-            .layerSize(vecSize)
-            .seed(1234)
-            .windowSize(5)
-            .lookupTable(table)
-            .vocabCache(cache)
-            .learningRate(0.05)
-            .minLearningRate(0.001)
-            .build();
+        log.info("Loading model....");
+        vec = WordVectorSerializer.readWord2VecModel(modelFile);
+        evaluateSamples(vec);
+        vec.getConfiguration().setEpochs(epochs);
+
+//        log.info("Creating model....");
+//        vec = new Word2Vec.Builder()
+//            .minWordFrequency(10)
+//            .iterations(1)
+//            .epochs(epochs)
+//            .layerSize(vecSize)
+//            .seed(1234)
+//            .windowSize(5)
+//            .lookupTable(table)
+//            .vocabCache(cache)
+//            .learningRate(0.05)
+//            .minLearningRate(1e-5)
+//            .build();
+//        vec.setLookupTable(table);
+//        vec.setVocab(table.getVocabCache());
+//        WordVectorSerializer.writeWord2VecModel(vec, modelFile);
+//        vec = WordVectorSerializer.readWord2VecModel(modelFile);
 
 
         int round = 0;
@@ -121,10 +130,6 @@ public class W2vAffsFullTrunc {
 //        WordVectorSerializer.writeWord2VecModel(vec, modelFile);
 //
 //        vec = WordVectorSerializer.readWord2VecModel(modelFile);
-        vec.setLookupTable(table);
-        vec.setVocab(table.getVocabCache());
-        WordVectorSerializer.writeWord2VecModel(vec, modelFile);
-        vec = WordVectorSerializer.readWord2VecModel(modelFile);
 //        vec.getConfiguration().setLearningRate(0.05);
 //        vec.getConfiguration().setMinLearningRate(1e-5);
 
