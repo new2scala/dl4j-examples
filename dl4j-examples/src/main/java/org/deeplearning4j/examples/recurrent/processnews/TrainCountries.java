@@ -57,19 +57,18 @@ public class TrainCountries {
 
 
     public static void main(String[] args) throws Exception {
-        String workingDir = "Y:\\vmshare\\";
-        String projDir = workingDir + "aff-w2v-tr\\";
+        //String workingDir = "Y:\\vmshare\\";
+        String projDir = "Y:\\vmshare\\fp2Affs-w2v\\";
         DATA_PATH = projDir;
-        WORD_VECTORS_PATH = workingDir + "aff-w2v-trunc.model";
+        WORD_VECTORS_PATH = projDir + "aff-full.model.1";
         //String modelPath = rootDir + "country-tr-2layer.model";
-        String modelPath = projDir + "country-tr-cuda.model";
+        String modelPath = projDir + "country-cuda.model";
 
         int batchSize = 128;     //Number of examples in each minibatch
         int nEpochs = 1000;        //Number of epochs (full passes of training data) to train on
         int truncateReviewsToLength = 15;  //Truncate reviews with length (# words) greater than this
 
-        //DataSetIterators for training and testing respectively
-        //Using AsyncDataSetIterator to do data loading in a separate thread; this may improve performance vs. waiting for data to load
+        //DataSetIterators for training and testing respectivelyCreating modelove performance vs. waiting for data to load
         log.info("Loading w2v");
         wordVectors = WordVectorSerializer.readWord2VecModel(new File(WORD_VECTORS_PATH));
         log.info("Done loading w2v");
@@ -79,22 +78,44 @@ public class TrainCountries {
         tokenizerFactory = new DefaultTokenizerFactory();
         tokenizerFactory.setTokenPreProcessor(new CommonPreprocessor());
 
-        CountryIterator iTrain = new CountryIterator.Builder()
+//        CountryIterator iTrain = new CountryIterator.Builder()
+//            .dataDirectory(DATA_PATH)
+//            .wordVectors(wordVectors)
+//            .batchSize(batchSize)
+//            .truncateLength(truncateReviewsToLength)
+//            .tokenizerFactory(tokenizerFactory)
+//            .train(true)
+//            .build();
+//
+//        CountryIterator iTest = new CountryIterator.Builder()
+//            .dataDirectory(DATA_PATH)
+//            .wordVectors(wordVectors)
+//            .batchSize(batchSize)
+//            .tokenizerFactory(tokenizerFactory)
+//            .truncateLength(truncateReviewsToLength)
+//            .train(false)
+//            .build();
+
+        int trainSkip = 20;
+        CountryIteratorSkip iTrain = new CountryIteratorSkip.Builder()
             .dataDirectory(DATA_PATH)
             .wordVectors(wordVectors)
             .batchSize(batchSize)
             .truncateLength(truncateReviewsToLength)
             .tokenizerFactory(tokenizerFactory)
             .train(true)
+            .skip(trainSkip)
             .build();
 
-        CountryIterator iTest = new CountryIterator.Builder()
+        int testSkip = 1000;
+        CountryIteratorSkip iTest = new CountryIteratorSkip.Builder()
             .dataDirectory(DATA_PATH)
             .wordVectors(wordVectors)
             .batchSize(batchSize)
             .tokenizerFactory(tokenizerFactory)
             .truncateLength(truncateReviewsToLength)
-            .train(false)
+            .train(true) // use the same data
+            .skip(testSkip)
             .build();
 
         //DataSetIterator train = new AsyncDataSetIterator(iTrain,1);
@@ -177,12 +198,12 @@ public class TrainCountries {
             System.out.println("Epoch " + i + " complete. Starting evaluation:");
 
 //            //Run evaluation. This is on 25k reviews, so can take some time
+            ModelSerializer.writeModel(net, modelPath, true);
+
             int evaluationPer = 30;
             if (i % evaluationPer == evaluationPer-1) {
                 evaluateTests(net, iTest);
             }
-
-            ModelSerializer.writeModel(net, modelPath, true);
 
             runTests(
                 net,
@@ -194,7 +215,7 @@ public class TrainCountries {
         System.out.println("----- Example complete -----");
     }
 
-    private static void evaluateTests(MultiLayerNetwork net, CountryIterator iTest) {
+    private static void evaluateTests(MultiLayerNetwork net, CountryIteratorSkip iTest) {
         long start = DateTime.now().getMillis();
         iTest.reset();
         Evaluation evaluation = net.evaluate(iTest);

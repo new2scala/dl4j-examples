@@ -259,7 +259,8 @@ public class MainFrame extends Application {
 
         loadButton.setOnAction(evt -> {
             createDriveTree();
-            Requests.reqDriveRoot(rootDriveHandler);
+            Requests.reqRootSharedFolder(rootDriveHandler);
+            //Requests.reqDriveRoot(rootDriveHandler);
             //DataHelpers.OneDriveFolderResp folder = OneDriveHelpers.testToken(_image);
             //createFileList(folder);
             //folder.value()

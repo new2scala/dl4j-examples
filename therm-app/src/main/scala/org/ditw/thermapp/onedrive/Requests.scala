@@ -32,7 +32,10 @@ object Requests {
     HttpHelper.doReq(httpGet(ReqDefaultDriveRoot), respHandler)
   }
 
-
+  private val ReqRootSharedFolder = s"${ReqUrlBase}shares/s!AkZrjJKFYvCfr36IUg0k7algsNUt/driveItem/children"
+  def reqRootSharedFolder(respHandler:HttpRespHandler):Unit = {
+    HttpHelper.doReq(httpGet(ReqRootSharedFolder), respHandler)
+  }
   private val ReqFolderItems = s"${ReqUrlBase}drive/items/%s/children"
   def reqFolderItems(folderId:String, respHandler:HttpRespHandlerT[Array[FolderItem]]):Unit = {
     HttpHelper.doReq(httpGet(ReqFolderItems.format(folderId)), respHandler)

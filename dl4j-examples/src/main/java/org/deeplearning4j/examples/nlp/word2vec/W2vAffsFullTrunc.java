@@ -77,7 +77,7 @@ public class W2vAffsFullTrunc {
 
         Word2Vec vec;
 
-        int epochs = 20;
+        int epochs = 4;
         int vecSize = 128;
 
         VocabCache<VocabWord> cache;
@@ -116,8 +116,8 @@ public class W2vAffsFullTrunc {
             .build();
         vec.setLookupTable(table);
         vec.setVocab(table.getVocabCache());
-        WordVectorSerializer.writeWord2VecModel(vec, modelFile);
-        vec = WordVectorSerializer.readWord2VecModel(modelFile);
+//        WordVectorSerializer.writeWord2VecModel(vec, modelFile);
+//        vec = WordVectorSerializer.readWord2VecModel(modelFile);
 
 
         int round = 0;
