@@ -96,7 +96,7 @@ public class TrainCountries {
 //            .train(false)
 //            .build();
 
-        int trainSkip = 20;
+        int trainSkip = 50;
         CountryIteratorSkip iTrain = new CountryIteratorSkip.Builder()
             .dataDirectory(DATA_PATH)
             .wordVectors(wordVectors)
@@ -132,11 +132,11 @@ public class TrainCountries {
         if (new File(modelPath).exists()) {
             System.out.println("+++++++++++++ Restoring model");
             net = ModelSerializer.restoreMultiLayerNetwork(modelPath);
-            runTests(
-                net,
-                inputs,
-                expResults
-            );
+//            runTests(
+//                net,
+//                inputs,
+//                expResults
+//            );
 //            System.out.println("Evaluating existing model ...");
 //            evaluateTests(net, iTest);
 
