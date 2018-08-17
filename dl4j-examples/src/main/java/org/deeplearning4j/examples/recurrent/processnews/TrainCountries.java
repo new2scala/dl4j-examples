@@ -96,7 +96,7 @@ public class TrainCountries {
 //            .train(false)
 //            .build();
 
-        int trainSkip = 20;
+        int trainSkip = 100;
         CountryIteratorSkip iTrain = new CountryIteratorSkip.Builder()
             .dataDirectory(DATA_PATH)
             .wordVectors(wordVectors)
@@ -107,7 +107,7 @@ public class TrainCountries {
             .skip(trainSkip)
             .build();
 
-        int testSkip = 100;
+        int testSkip = 10;
         CountryIteratorSkip iTest = new CountryIteratorSkip.Builder()
             .dataDirectory(DATA_PATH)
             .wordVectors(wordVectors)
@@ -132,6 +132,8 @@ public class TrainCountries {
         if (new File(modelPath).exists()) {
             System.out.println("+++++++++++++ Restoring model");
             net = ModelSerializer.restoreMultiLayerNetwork(modelPath);
+            net.setLearningRate(0.0005);
+            //log.info("model restored learning rate: {}", net.getDefaultConfiguration());
 //            runTests(
 //                net,
 //                inputs,
@@ -147,7 +149,7 @@ public class TrainCountries {
             int lstmLayerSize = 128;
             MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .updater(
-                    new RmsProp(0.05)
+                    new RmsProp(0.01)
                     //new Nesterovs(0.00001,0.01)
                 )
                 .l2(1e-5)
@@ -200,7 +202,7 @@ public class TrainCountries {
 //            //Run evaluation. This is on 25k reviews, so can take some time
             ModelSerializer.writeModel(net, modelPath, true);
 
-            int evaluationPer = 30;
+            int evaluationPer = 10;
             if (i % evaluationPer == evaluationPer-1) {
                 evaluateTests(net, iTest);
             }

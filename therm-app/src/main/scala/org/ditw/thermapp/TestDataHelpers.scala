@@ -44,10 +44,14 @@ object TestDataHelpers {
 
   def getSelectedDataSource(folderItem: FolderItem):DataSource =  new DataSource {
 
-    private val dataPath = s"${CacheHelper.driveCache.localPath}/${folderItem.id}"
-    private val extPath = s"$dataPath/_ext"
-    private val imagePath = s"$extPath/ts1_shots"  //todo: path depending on timestamp
-    private val thermoReadingPath = s"$extPath/ts1.json"
+//    private val dataPath = s"${CacheHelper.driveCache.localPath}/${folderItem.id}"
+//    private val extPath = s"$dataPath/_ext"
+//    private val imagePath = s"$extPath/ts1_shots"  //todo: path depending on timestamp
+//    private val thermoReadingPath = s"$extPath/ts1.json"
+    private val dataPath = s"${CacheHelper.driveCache.localPath}"
+    //private val extPath = s"$dataPath/_ext"
+    private val imagePath = s"$dataPath\\9FF06285928C6B46!6143"  //todo: path depending on timestamp
+    private val thermoReadingPath = s"$dataPath\\index.json"
 
     private val imagesSorted:IndexedSeq[String] = {
       try {

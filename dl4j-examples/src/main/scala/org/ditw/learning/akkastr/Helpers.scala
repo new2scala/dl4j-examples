@@ -19,7 +19,7 @@ object Helpers {
         .map(startIdx => Future(countryIt.nextDataSet(batchSize, startIdx, cats, catData)))
     )
 
-    Await.result(fr, 60 seconds).toArray
+    Await.result(fr, 1200 seconds).toArray
   }
 
 }

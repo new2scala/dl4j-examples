@@ -42,10 +42,15 @@ public class MainFrame extends Application {
             public void handle(ActionEvent event) {
                 MenuItem src = (MenuItem)event.getSource();
                 FolderItem folder = (FolderItem)src.getUserData();
-                if (folder.isFolder()) {
+
+                if (folder.isRoot()) {
+                    System.out.println("Start caching root ...");
+                    Requests.reqCacheSharedFolderRootItems();
+                }
+                else if (folder.isFolder()) {
                     // todo: handle completion
                     System.out.println("Start caching ...");
-                    Requests.reqCacheFolderItems(folder.id());
+                    Requests.reqCacheSharedFolderItems(folder.id());
                 }
             }
         });
@@ -216,7 +221,8 @@ public class MainFrame extends Application {
                 public void changed(ObservableValue<? extends TreeItem<FolderItem>> observable, TreeItem<FolderItem> oldValue, TreeItem<FolderItem> newValue) {
                     if (newValue.getValue().isFolder()) {
                         currData = TestDataHelpers.getSelectedDataSource(newValue.getValue());
-                        Requests.reqFolderItems(newValue.getValue().id(), folderItemsHandler);
+                        //Requests.reqFolderItems(newValue.getValue().id(), folderItemsHandler);
+                        Requests.reqSharedFolderItems(newValue.getValue().id(), folderItemsHandler);
                     }
                 }
             }
