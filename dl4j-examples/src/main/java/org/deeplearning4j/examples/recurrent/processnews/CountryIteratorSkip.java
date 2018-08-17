@@ -20,6 +20,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 
+import org.ditw.learning.akkastr.Helpers;
+
 import static org.nd4j.linalg.indexing.NDArrayIndex.all;
 import static org.nd4j.linalg.indexing.NDArrayIndex.point;
 
@@ -94,16 +96,30 @@ public class CountryIteratorSkip implements DataSetIterator {
             this.cachedDataSet = new ArrayList<>(batches);
             log.info("Preparing DataSet #: {}", batches);
             int startIndex = 0;
-            for (int i = 0; i < batches; i++) {
-                this.cachedDataSet.add(nextDataSet(batchSize, startIndex, cached.getKey(), cached.getValue()));
-                startIndex += batchSize;
+
+            DataSet[] dataSets = Helpers.asyncRunJ(
+                batches,
+                batchSize,
+                cached.getKey(),
+                cached.getValue(),
+                this
+            );
+            log.info("{} datasets prepared", dataSets.length);
+            for (int i = 0; i < dataSets.length; i++) {
+                this.cachedDataSet.add(dataSets[i]);
             }
+//            for (int i = 0; i < batches; i++) {
+//                this.cachedDataSet.add(nextDataSet(batchSize, startIndex, cached.getKey(), cached.getValue()));
+//                startIndex += batchSize;
+//            }
             log.info("... done");
         }
         catch (Exception ex) {
             throw new RuntimeException(ex);
         }
     }
+
+
 
     public static Builder Builder() {
         return new Builder();
@@ -137,6 +153,7 @@ public class CountryIteratorSkip implements DataSetIterator {
 
 
     public void shuffle() throws Exception {
+        log.info("Shuffling data ...");
         List<Pair<Integer, List<String>>> res = new ArrayList<>(sourceData.size());
         for (Pair<Integer, List<String>> p : sourceData) {
             Pair<Integer, List<String>> p2 = Pair.of(p.getKey(), shuffleList(p.getValue()));
@@ -144,10 +161,11 @@ public class CountryIteratorSkip implements DataSetIterator {
         }
         res = shuffleList(res);
         sourceData = res;
+        log.info("Done shuffling data ...");
         prepareCacheData();
     }
 
-    private DataSet nextDataSet(int batchSize, int startIndex, List<Integer> categories, List<String> categoryData) throws IOException {
+    public DataSet nextDataSet(int batchSize, int startIndex, List<Integer> categories, List<String> categoryData) throws IOException {
         // Loads news into news list from categoryData List along with category of each news
         List<String> news = new ArrayList<>(batchSize);
         List<Integer> category = new ArrayList<>(batchSize);

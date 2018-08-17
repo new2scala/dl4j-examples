@@ -58,9 +58,9 @@ public class TrainCountries {
 
     public static void main(String[] args) throws Exception {
         //String workingDir = "Y:\\vmshare\\";
-        String projDir = "Y:\\vmshare\\fp2Affs-w2v\\";
+        String projDir = "Y:\\vmshare\\fp2Affs-w2v\\us233\\";
         DATA_PATH = projDir;
-        WORD_VECTORS_PATH = projDir + "aff-full.model.1";
+        WORD_VECTORS_PATH = "Y:\\vmshare\\fp2Affs-w2v\\aff-full.model.1";
         //String modelPath = rootDir + "country-tr-2layer.model";
         String modelPath = projDir + "country-cuda.model";
 
@@ -96,7 +96,7 @@ public class TrainCountries {
 //            .train(false)
 //            .build();
 
-        int trainSkip = 50;
+        int trainSkip = 20;
         CountryIteratorSkip iTrain = new CountryIteratorSkip.Builder()
             .dataDirectory(DATA_PATH)
             .wordVectors(wordVectors)
@@ -107,7 +107,7 @@ public class TrainCountries {
             .skip(trainSkip)
             .build();
 
-        int testSkip = 1000;
+        int testSkip = 100;
         CountryIteratorSkip iTest = new CountryIteratorSkip.Builder()
             .dataDirectory(DATA_PATH)
             .wordVectors(wordVectors)
@@ -215,9 +215,10 @@ public class TrainCountries {
         System.out.println("----- Example complete -----");
     }
 
-    private static void evaluateTests(MultiLayerNetwork net, CountryIteratorSkip iTest) {
+    private static void evaluateTests(MultiLayerNetwork net, CountryIteratorSkip iTest) throws Exception {
         long start = DateTime.now().getMillis();
         iTest.reset();
+        iTest.shuffle();
         Evaluation evaluation = net.evaluate(iTest);
         System.out.println(evaluation.stats(false, true));
         long duration = DateTime.now().getMillis() - start;
@@ -263,25 +264,45 @@ public class TrainCountries {
         "department of psychology princeton university"
     };
     private final static String[] expResults = new String[]{
-        "South Africa",
+//        "South Africa",
+//        "United States",
+//        "Canada",
+//        "Finland",
+//        "United States",
+//        "Denmark",
+//        "Australia",
+//        "Japan",
+//        "United Kingdom",
+//        "United States",
+//        "United Kingdom",
+//        "France",
+//        "United States",
+//        "China",
+//        "Japan",
+//        "Switzerland",
+//        "United Kingdom",
+//        "New Zealand",
+//        "Austria",
+//        "United States"
+        "Other",
         "United States",
-        "Canada",
-        "Finland",
+        "Other",
+        "Other",
         "United States",
-        "Denmark",
-        "Australia",
-        "Japan",
-        "United Kingdom",
+        "Other",
+        "Other",
+        "Other",
+        "Other",
         "United States",
-        "United Kingdom",
-        "France",
+        "Other",
+        "Other",
         "United States",
-        "China",
-        "Japan",
-        "Switzerland",
-        "United Kingdom",
-        "New Zealand",
-        "Austria",
+        "Other",
+        "Other",
+        "Other",
+        "Other",
+        "Other",
+        "Other",
         "United States"
     };
 
