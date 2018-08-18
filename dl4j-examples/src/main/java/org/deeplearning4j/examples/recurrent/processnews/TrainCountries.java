@@ -107,7 +107,7 @@ public class TrainCountries {
             .skip(trainSkip)
             .build();
 
-        int testSkip = 10;
+        int testSkip = 20;
         CountryIteratorSkip iTest = new CountryIteratorSkip.Builder()
             .dataDirectory(DATA_PATH)
             .wordVectors(wordVectors)
@@ -132,7 +132,7 @@ public class TrainCountries {
         if (new File(modelPath).exists()) {
             System.out.println("+++++++++++++ Restoring model");
             net = ModelSerializer.restoreMultiLayerNetwork(modelPath);
-            net.setLearningRate(0.0005);
+            net.setLearningRate(0.0008);
             //log.info("model restored learning rate: {}", net.getDefaultConfiguration());
 //            runTests(
 //                net,

@@ -129,6 +129,7 @@ public class MainFrame extends Application {
     private final static int _ThermoGridCellSize = 36;
 
     private Rectangle[][] rects;
+    private Label[][] tempLabel;
 
     private GridPane thermoGrid() {
         GridPane gp = new GridPane();
@@ -137,15 +138,19 @@ public class MainFrame extends Application {
         gp.setHgap(10);
 
         rects = new Rectangle[_thermoGridHeight][];
+        tempLabel = new Label[_thermoGridHeight][];
         for (int i = 0; i < _thermoGridHeight; i ++) {
             rects[i] = new Rectangle[_thermoGridWidth];
+            tempLabel[i] = new Label[_thermoGridWidth];
             for (int j = 0; j < _thermoGridWidth; j++) {
-                Rectangle rect =
+                rects[i][j] =
                     new Rectangle(_ThermoGridCellSize, _ThermoGridCellSize);
 //                String color = ThermoColorHelper.thermoVal2Color(_thermoGridData[i][j]);
 //                rect.setFill(Color.web(color));
-                gp.add(rect, j, i);
-                rects[i][j] = rect;
+                tempLabel[i][j] = new Label();
+                StackPane panel = new StackPane();
+                panel.getChildren().addAll(rects[i][j], tempLabel[i][j]);
+                gp.add(panel, _thermoGridWidth-i, j);
             }
         }
 
@@ -160,6 +165,9 @@ public class MainFrame extends Application {
             for (int j = 0; j < thermoData[i].length; j++) {
                 String color = ThermoColorHelper.thermoVal2Color(thermoData[i][j]);
                 rects[i][j].setFill(Color.web(color));
+                String temp = String.format("%.2f", thermoData[i][j]);
+                tempLabel[i][j].setText(temp);
+                //rects[i][j]
             }
         }
 

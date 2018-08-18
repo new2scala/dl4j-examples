@@ -16,6 +16,7 @@ import org.nd4j.linalg.indexing.NDArrayIndex;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
@@ -43,18 +44,20 @@ public class TestCountries {
 
 
     public static void main(String[] args) throws Exception {
-        String workingDir = "Y:\\vmshare\\";
-        String WORD_VECTORS_PATH = workingDir + "aff-w2v-trunc.model";
-        String projDir = workingDir + "aff-w2v-tr\\";
+        String workingDir = "Y:\\vmshare\\fp2Affs-w2v\\";
+        String WORD_VECTORS_PATH = workingDir + "aff-full.model";
+        String projDir = workingDir + "us233\\";
 
         loadCategoryMap(projDir + "categories.txt");
         tokenizerFactory = new DefaultTokenizerFactory();
         tokenizerFactory.setTokenPreProcessor(new CommonPreprocessor());
         wordVectors = WordVectorSerializer.readWord2VecModel(new File(WORD_VECTORS_PATH));
 
-        model = ModelSerializer.restoreMultiLayerNetwork(projDir + "country-tr-cuda.model");
+        System.out.println("word2vec loaded");
+        model = ModelSerializer.restoreMultiLayerNetwork(projDir + "country-cuda.model");
 
-        runTests(projDir + "-1.txt");
+        System.out.println("model loaded");
+        runTests(workingDir + "-1.txt", projDir + "-1-res.txt");
 
 //        runTests(
 //            new String[]{
@@ -81,10 +84,11 @@ public class TestCountries {
 
     }
 
-    private static void runTests(String fileName) throws Exception {
+    private static void runTests(String fileName, String resultFile) throws Exception {
 
         List<String> lines = IOUtils.readLines(new FileInputStream(fileName), StandardCharsets.UTF_8);
-
+        System.out.println(lines.size() + " lines loaded");
+        List<String> result = new ArrayList<>(lines.size());
         for (String line : lines) {
             DataSet ds = prepareTestData(line);
             if (ds == null)
@@ -106,10 +110,12 @@ public class TestCountries {
 
             }
             String resCat = categoryMap.get(cat);
-            System.out.println(
-                String.format("%s/%.4f(%s):\t%s", resCat, max, expCountryVal, line)
-            );
+            String resTr = String.format("%s/%.4f(%s):\t%s", resCat, max, expCountryVal, line);
+            System.out.println(resTr);
+            result.add(resTr);
         }
+
+        IOUtils.writeLines(result, "\n", new FileOutputStream(resultFile), StandardCharsets.UTF_8);
     }
 
     private static void runTests(String[] inputs, String[] expCountries) {
