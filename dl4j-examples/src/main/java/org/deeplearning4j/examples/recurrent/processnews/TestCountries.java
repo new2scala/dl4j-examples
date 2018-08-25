@@ -44,9 +44,9 @@ public class TestCountries {
 
 
     public static void main(String[] args) throws Exception {
-        String workingDir = "Y:\\vmshare\\fp2Affs-w2v\\";
-        String WORD_VECTORS_PATH = workingDir + "aff-full.model";
-        String projDir = workingDir + "us233\\";
+        String workingDir = "Y:\\vmshare\\fp2Affs-full\\us-au-gb-ca\\";
+        String WORD_VECTORS_PATH = "Y:\\vmshare\\fp2Affs-full\\w2v-full.model.1";
+        String projDir = workingDir; // + "us233\\";
 
         loadCategoryMap(projDir + "categories.txt");
         tokenizerFactory = new DefaultTokenizerFactory();
@@ -54,10 +54,10 @@ public class TestCountries {
         wordVectors = WordVectorSerializer.readWord2VecModel(new File(WORD_VECTORS_PATH));
 
         System.out.println("word2vec loaded");
-        model = ModelSerializer.restoreMultiLayerNetwork(projDir + "country-cuda.model");
+        model = ModelSerializer.restoreMultiLayerNetwork(projDir + "country-acgu.model");
 
         System.out.println("model loaded");
-        runTests(workingDir + "-1.txt", projDir + "-1-res.txt");
+        runTests("Y:\\vmshare\\fp2Affs-full\\-1.txt", projDir + "-1-res.txt");
 
 //        runTests(
 //            new String[]{

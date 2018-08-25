@@ -40,10 +40,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.FileInputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class TrainCountries {
 
@@ -58,15 +55,15 @@ public class TrainCountries {
 
     public static void main(String[] args) throws Exception {
         //String workingDir = "Y:\\vmshare\\";
-        String projDir = "Y:\\vmshare\\fp2Affs-w2v\\us233\\";
+        String projDir = "Y:\\vmshare\\fp2Affs-full\\us-au-gb-ca\\";
         DATA_PATH = projDir;
-        WORD_VECTORS_PATH = "Y:\\vmshare\\fp2Affs-w2v\\aff-full.model.1";
+        WORD_VECTORS_PATH = "Y:\\vmshare\\fp2Affs-full\\w2v-full.model.1";
         //String modelPath = rootDir + "country-tr-2layer.model";
-        String modelPath = projDir + "country-cuda.model";
+        String modelPath = projDir + "country-acgu.model";
 
         int batchSize = 128;     //Number of examples in each minibatch
         int nEpochs = 1000;        //Number of epochs (full passes of training data) to train on
-        int truncateReviewsToLength = 15;  //Truncate reviews with length (# words) greater than this
+        int truncateReviewsToLength = 10;  //Truncate reviews with length (# words) greater than this
 
         //DataSetIterators for training and testing respectivelyCreating modelove performance vs. waiting for data to load
         log.info("Loading w2v");
@@ -97,6 +94,17 @@ public class TrainCountries {
 //            .build();
 
         int trainSkip = 100;
+        Map<Integer, List<String>> mandData = new HashMap<>();
+        mandData.put(
+            4, Arrays.asList(
+                "hospital of chinese pla",
+                "chinese pla",
+                "new zealand dunedin",
+                "dunedin new zealand",
+                "cape town",
+                "tsukuba tsukuba-city"
+            )
+        );
         CountryIteratorSkip iTrain = new CountryIteratorSkip.Builder()
             .dataDirectory(DATA_PATH)
             .wordVectors(wordVectors)
@@ -104,6 +112,8 @@ public class TrainCountries {
             .truncateLength(truncateReviewsToLength)
             .tokenizerFactory(tokenizerFactory)
             .train(true)
+            .mandatoryData(mandData)
+            .useMandatoryDataOnly(false)
             .skip(trainSkip)
             .build();
 
@@ -121,7 +131,7 @@ public class TrainCountries {
         //DataSetIterator train = new AsyncDataSetIterator(iTrain,1);
         //DataSetIterator test = new AsyncDataSetIterator(iTest,1);
 
-        int inputNeurons = wordVectors.getWordVector(wordVectors.vocab().wordAtIndex(0)).length; // 100 in our case
+        int inputNeurons = wordVectors.getWordVector(wordVectors.vocab().wordAtIndex(0)).length;
         System.out.println("Input (w2v) size: " + inputNeurons);
         int outputs = iTrain.getLabels().size();
 
@@ -132,7 +142,7 @@ public class TrainCountries {
         if (new File(modelPath).exists()) {
             System.out.println("+++++++++++++ Restoring model");
             net = ModelSerializer.restoreMultiLayerNetwork(modelPath);
-            net.setLearningRate(0.0008);
+            net.setLearningRate(0.0005);
             //log.info("model restored learning rate: {}", net.getDefaultConfiguration());
 //            runTests(
 //                net,
@@ -149,7 +159,7 @@ public class TrainCountries {
             int lstmLayerSize = 128;
             MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .updater(
-                    new RmsProp(0.01)
+                    new RmsProp(0.005)
                     //new Nesterovs(0.00001,0.01)
                 )
                 .l2(1e-5)
@@ -202,16 +212,19 @@ public class TrainCountries {
 //            //Run evaluation. This is on 25k reviews, so can take some time
             ModelSerializer.writeModel(net, modelPath, true);
 
-            int evaluationPer = 10;
+            int runTestPer = 20;
+            if (i % runTestPer == runTestPer-1) {
+                runTests(
+                    net,
+                    inputs,
+                    expResults
+                );
+            }
+            int evaluationPer = 20;
             if (i % evaluationPer == evaluationPer-1) {
                 evaluateTests(net, iTest);
             }
 
-            runTests(
-                net,
-                inputs,
-                expResults
-            );
         }
 
         System.out.println("----- Example complete -----");
@@ -288,21 +301,21 @@ public class TrainCountries {
 //        "United States"
         "Other",
         "United States",
+        "Canada",
         "Other",
+        "United States",
+        "Other",
+        "Australia",
+        "Other",
+        "United Kingdom",
+        "United States",
+        "United Kingdom",
         "Other",
         "United States",
         "Other",
         "Other",
         "Other",
-        "Other",
-        "United States",
-        "Other",
-        "Other",
-        "United States",
-        "Other",
-        "Other",
-        "Other",
-        "Other",
+        "United Kingdom",
         "Other",
         "Other",
         "United States"

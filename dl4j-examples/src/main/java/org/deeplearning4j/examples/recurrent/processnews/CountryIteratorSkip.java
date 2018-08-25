@@ -45,10 +45,13 @@ public class CountryIteratorSkip implements DataSetIterator {
 //    private int currCategory = 0;
     private int skip = 0;
 
+    private Map<Integer, List<String>> mandatoryData = null;
+
 //    private List<Integer> cachedCategory;
 //    private List<String> cachedCategoryData;
 
     private List<DataSet> cachedDataSet;
+    private boolean useMandatoryDataOnly = false;
 
     /**
      * @param dataDirectory  the directory of the news headlines data set
@@ -67,6 +70,8 @@ public class CountryIteratorSkip implements DataSetIterator {
         int truncateLength,
         boolean train,
         TokenizerFactory tokenizerFactory,
+        Map<Integer, List<String>> mandatoryData,
+        boolean useMandatoryDataOnly,
         int skip
     ) {
         this.dataDirectory = dataDirectory;
@@ -75,6 +80,8 @@ public class CountryIteratorSkip implements DataSetIterator {
         this.wordVectors = wordVectors;
         this.truncateLength = truncateLength;
         this.tokenizerFactory = tokenizerFactory;
+        this.mandatoryData = mandatoryData;
+        this.useMandatoryDataOnly = useMandatoryDataOnly;
         this.skip = skip;
 
         populateData(train); // source data ready
@@ -88,11 +95,28 @@ public class CountryIteratorSkip implements DataSetIterator {
 
     private void prepareCacheData() {
         try {
-            Pair<List<Integer>, List<String>> cached = prepareCachedData(sourceData, skip);
+            Pair<List<Integer>, List<String>> cached;
+            if (!useMandatoryDataOnly) {
+                cached = prepareCachedData(sourceData, skip);
+            }
+            else {
+                List<Integer> t1 = new ArrayList<>();
+                List<String> t2 = new ArrayList<>();
+                cached = Pair.of(t1, t2);
+            }
+            // add mandatory data
+            for (Integer cat : mandatoryData.keySet()) {
+                List<String> strs = mandatoryData.get(cat);
+                for (String str : strs) {
+                    cached.getKey().add(cat);
+                    cached.getValue().add(str);
+                }
+            }
             int dataCount = cached.getKey().size();
+            System.out.println("training data size: " + dataCount);
 //        this.cachedCategory = cached.getKey();
 //        this.cachedCategoryData = cached.getValue();
-            int batches = dataCount / batchSize;
+            int batches = (dataCount-1) / batchSize + 1;
             this.cachedDataSet = new ArrayList<>(batches);
             log.info("Preparing DataSet #: {}", batches);
             int startIndex = 0;
@@ -153,15 +177,20 @@ public class CountryIteratorSkip implements DataSetIterator {
 
 
     public void shuffle() throws Exception {
-        log.info("Shuffling data ...");
-        List<Pair<Integer, List<String>>> res = new ArrayList<>(sourceData.size());
-        for (Pair<Integer, List<String>> p : sourceData) {
-            Pair<Integer, List<String>> p2 = Pair.of(p.getKey(), shuffleList(p.getValue()));
-            res.add(p2);
+        if (useMandatoryDataOnly) {
+            log.info("useMandatoryDataOnly: skip shuffling data");
         }
-        res = shuffleList(res);
-        sourceData = res;
-        log.info("Done shuffling data ...");
+        else {
+            log.info("Shuffling data ...");
+            List<Pair<Integer, List<String>>> res = new ArrayList<>(sourceData.size());
+            for (Pair<Integer, List<String>> p : sourceData) {
+                Pair<Integer, List<String>> p2 = Pair.of(p.getKey(), shuffleList(p.getValue()));
+                res.add(p2);
+            }
+            res = shuffleList(res);
+            sourceData = res;
+            log.info("Done shuffling data ...");
+        }
         prepareCacheData();
     }
 
@@ -484,6 +513,7 @@ public class CountryIteratorSkip implements DataSetIterator {
         return this.maxLength;
     }
 
+    private final static Map<Integer, List<String>> EmptyMandatoryData = new HashMap<>(0);
     public static class Builder {
         private String dataDirectory;
         private WordVectors wordVectors;
@@ -493,6 +523,9 @@ public class CountryIteratorSkip implements DataSetIterator {
         private boolean train;
         private int skip;
 
+        private Map<Integer, List<String>> mandatoryData = EmptyMandatoryData;
+        private boolean useMandatoryDataOnly = false;
+
         Builder() {
         }
 
@@ -501,6 +534,15 @@ public class CountryIteratorSkip implements DataSetIterator {
             return this;
         }
 
+        public Builder mandatoryData(Map<Integer, List<String>> mandatoryData) {
+            this.mandatoryData = mandatoryData;
+            return this;
+        }
+
+        public Builder useMandatoryDataOnly(boolean useMandatoryDataOnly) {
+            this.useMandatoryDataOnly = useMandatoryDataOnly;
+            return this;
+        }
         public Builder wordVectors(WordVectors wordVectors) {
             this.wordVectors = wordVectors;
             return this;
@@ -538,6 +580,8 @@ public class CountryIteratorSkip implements DataSetIterator {
                 truncateLength,
                 train,
                 tokenizerFactory,
+                mandatoryData,
+                useMandatoryDataOnly,
                 skip
             );
         }

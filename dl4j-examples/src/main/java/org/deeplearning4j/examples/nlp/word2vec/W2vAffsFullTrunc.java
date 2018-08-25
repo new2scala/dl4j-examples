@@ -65,19 +65,19 @@ public class W2vAffsFullTrunc {
 
     public static void main(String[] args) throws Exception {
 
-        String workingDir = "Y:\\vmshare\\fp2Affs-w2v\\";
+        String workingDir = "Y:\\vmshare\\fp2Affs-full\\";
         //String modelFile = workingDir + "aff-w2v.model";
         //File trainingDataPath = new File("Y:\\vmshare\\aff-w2v-trunc");
-        File modelFile = new File(workingDir + "aff-full.model");
+        File modelFile = new File(workingDir + "w2v-full.model");
         File trainingDataPath = new File("Y:\\vmshare\\fp2Affs_uniq_trunc");
+        //File trainingDataPath = new File("Y:\\vmshare\\aff-w2v-trunc");
 
-        String vocabDir = "Y:\\vmshare\\fp2Affs_uniq_trunc_freq";
-
-        String useVocabFrom = "Y:\\vmshare\\aff-w2v-tr\\aff-full.model";
+        //String vocabDir = "Y:\\vmshare\\fp2Affs_uniq_trunc_freq";
+        //String useVocabFrom = "Y:\\vmshare\\aff-w2v-tr\\aff-full.model";
 
         Word2Vec vec;
 
-        int epochs = 4;
+        int epochs = 20;
         int vecSize = 128;
 
         VocabCache<VocabWord> cache;
@@ -90,9 +90,7 @@ public class W2vAffsFullTrunc {
                 .cache(cache).build();
         }
         else {
-            Word2Vec tmp = WordVectorSerializer.readWord2VecModel(modelFile);
-            table = tmp.getLookupTable();
-            cache = table.getVocabCache();
+            throw new RuntimeException("model file exists: " + modelFile);
         }
 
 //
@@ -108,10 +106,10 @@ public class W2vAffsFullTrunc {
             .epochs(epochs)
             .layerSize(vecSize)
             .seed(1234)
-            .windowSize(5)
+            .windowSize(9)
             .lookupTable(table)
             .vocabCache(cache)
-            .learningRate(0.05)
+            .learningRate(0.001)
             .minLearningRate(1e-5)
             .build();
         vec.setLookupTable(table);

@@ -43,9 +43,9 @@ object Lstm1 extends App {
 
     override def batch(): Int = 1
 
-    override def totalExamples(): Int = d.length
+    def totalExamples(): Int = d.length
 
-    override def numExamples(): Int = totalExamples
+    def numExamples(): Int = totalExamples
 
     override def inputColumns(): Int = 1
 
@@ -59,7 +59,7 @@ object Lstm1 extends App {
 
     override def totalOutcomes(): Int = 1
 
-    override def cursor(): Int = currIdx
+    def cursor(): Int = currIdx
   }
 
   val lstmSize = 10
@@ -123,15 +123,16 @@ object Lstm1 extends App {
     }
   }
   var output = net.rnnTimeStep(initInput)
-  output = output.tensorAlongDimension(output.size(2)-1, 1, 0)
+  output = output.tensorAlongDimension(output.size(2).intValue()-1, 1, 0)
 
   (0 until 100).foreach { idx =>
     val nextInput = Nd4j.zeros(1, 1, 1)
     nextInput.putScalar(Array(0, 0, 0), idx*0.01)
     output = net.rnnTimeStep(nextInput)
-    output = output.tensorAlongDimension(output.size(2)-1, 1, 0)
-    val o = output.getDouble(0, 0)
-    println(o)
+    output = output.tensorAlongDimension(output.size(2).intValue()-1, 1, 0)
+//    val o = output.getDouble(0, 0)
+//    println(o)
+    println(output)
   }
 
   println("done")
