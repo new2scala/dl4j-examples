@@ -68,7 +68,7 @@ public class W2vAffsFullTrunc {
         String workingDir = "Y:\\vmshare\\fp2Affs-full\\";
         //String modelFile = workingDir + "aff-w2v.model";
         //File trainingDataPath = new File("Y:\\vmshare\\aff-w2v-trunc");
-        File modelFile = new File(workingDir + "w2v-full.model");
+        File modelFile = new File(workingDir + "w2v-full-40-0001.model");
         File trainingDataPath = new File("Y:\\vmshare\\fp2Affs_uniq_trunc");
         //File trainingDataPath = new File("Y:\\vmshare\\aff-w2v-trunc");
 
@@ -77,7 +77,7 @@ public class W2vAffsFullTrunc {
 
         Word2Vec vec;
 
-        int epochs = 20;
+        int epochs = 40;
         int vecSize = 128;
 
         VocabCache<VocabWord> cache;

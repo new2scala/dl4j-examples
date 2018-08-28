@@ -97,8 +97,22 @@ object TestDataHelpers {
 
     private var cursor = 0
 
+    private def time2Sec(ts:String):Long = {
+      val parts = ts.substring(ts.length-8).split("\\.")
+      val hours = parts(0).toInt
+      val minutes = parts(1).toInt
+      val seconds = parts(2).toInt
+      val total:Long = (hours*60+minutes)*60 + seconds
+      total
+    }
+
     private def dataUnit(csr:Int):Option[DataUnit] = {
-      val fileName = s"$imagePath/${imagesSorted(csr)}"
+      val imgPath = imagesSorted(csr)
+      val thermR = thermoReadings(csr).time
+      val thermoTime = time2Sec(thermR)
+      val imgTime = time2Sec(imgPath.substring(0, imgPath.length-4))
+      println(s"---------------\n\tThermo Reading Time: $thermR\n\t         Image Path: $imgPath\n\t              Diff: ${thermoTime-imgTime}")
+      val fileName = s"$imagePath/$imgPath"
       println(s"Getting image [$fileName] ...")
       val fio = new FileInputStream(fileName)
       val res = DataUnit(

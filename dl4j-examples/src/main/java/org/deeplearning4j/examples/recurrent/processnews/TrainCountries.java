@@ -102,7 +102,83 @@ public class TrainCountries {
                 "new zealand dunedin",
                 "dunedin new zealand",
                 "cape town",
-                "tsukuba tsukuba-city"
+                "tsukuba tsukuba-city",
+                "institute of molecular medicine university of brescia brescia",
+                "mie university",
+                "szpitala wojewódzkiego im sw łukasza w tarnowie",
+                "zakainy samodzielnego publicznego zakladu opieki zdrowotnej w hajnówce",
+                "university of turin turin",
+                "university of torino torino",
+                "'t olderloug te slochteren",
+                "'s heeren loo-lozenoord ermelo",
+                "'s koonings jaght arnhem",
+                "medical microbiology rikshospitalet medical center and university of oslo",
+                "university of oslo",
+                "bioinformatics line / biology department / universidad de caldas",
+                "instytut zdrowia publicznego zakład ekonomiki zdrowia i zabezpieczenia społecznego"
+            )
+        );
+        mandData.put(
+            0, Arrays.asList(
+                "whitehorse division of general practice victoria"
+            )
+        );
+        mandData.put(
+            1, Arrays.asList(
+                "of gynaecologic oncology university of western ontario london on",
+                "western university libraries london on"
+            )
+        );
+        mandData.put(
+            2, Arrays.asList(
+                "the lancet london england",
+                "of public health st mary's campus london w2 [[daa]]",
+                "research & dental public health gkt dental institute london",
+                "london school of hygiene and tropical medicine",
+                "london school of economics",
+                "guy's and st thomas' nhs trust london england",
+                "matrix chambers london",
+                "royal hospital for neuro-disability london",
+                "university college london",
+                "[[d4]] university of london neurosurgery [[d4]]",
+                "saint jeorge medical school university of london london",
+                "t8 university college london hospitals london",
+                "bmas london",
+                "cell biology university college london london",
+                "centre for nanotechnology university college london [[aada]] [[daa]] england",
+                "college london hospital nhs foundation trust mortimer market london",
+                "department of radiology imaging university college hospital london",
+                "health at king's college london school of medicine london",
+                "healthcare nhs trust 57 waterloo road london [[aad]] [[daa]]",
+                "institute of cardiovascular science university college london london england",
+                "north west thames deanery london",
+                "london school of economics and political science london",
+                "king's college hospital nhs foundation trust hill london",
+                "maxillofacial unit/oncology king's college hospital hill london",
+                "king's college hospital hill london [[aad]] [[daa]]",
+                "king's college hospital hill london",
+                "caldecot road hill london england [[aad]] [[daa]]",
+                "prism institute of psychiatry hill london england",
+                "and gynecology king's college hospital hill london [[aad]] [[daa]]",
+                "of neurosciences king's college hospital hill london [[aad]] [[daa]]",
+                "department of otolaryngology kings college hospital hill london",
+                "king's college london dental institute hill london [[aad]] [[daa]]",
+                "traumatic stress service maudsley hospital hill london [[aad]] [[daa]]",
+                "king's college school of medicine & dentistry hill london",
+                "dental public health king's college hospital hill london",
+                "college london dental institute hill london [[aad]] [[daa]] ukb",
+                "the king's headache service king's college hospital hill london",
+                "institute of liver studies kings college hospital hill london",
+                "national addiction centre hill london england",
+                "maxillofacial surgery king's college hospital hill london [[aad]] [[daa]]",
+                "department of radiology king's college hospital hill london",
+                "department of urogynaecology king's college hospital hill london",
+                "windsor walk hill london [[aad]] [[daa]]",
+                "institute of psychiatry hill london se58af england",
+                "college london de crespigny park hill london [[aad]] [[daa]]",
+                "k.s jacob institute of psychiatry hill london [[aad]] [[daa]]",
+                "northern imperial college and royal brompton hospital london england",
+                "imperial college london"
             )
         );
         CountryIteratorSkip iTrain = new CountryIteratorSkip.Builder()
@@ -142,7 +218,7 @@ public class TrainCountries {
         if (new File(modelPath).exists()) {
             System.out.println("+++++++++++++ Restoring model");
             net = ModelSerializer.restoreMultiLayerNetwork(modelPath);
-            net.setLearningRate(0.0005);
+            net.setLearningRate(0.0002);
             //log.info("model restored learning rate: {}", net.getDefaultConfiguration());
 //            runTests(
 //                net,
@@ -212,7 +288,7 @@ public class TrainCountries {
 //            //Run evaluation. This is on 25k reviews, so can take some time
             ModelSerializer.writeModel(net, modelPath, true);
 
-            int runTestPer = 20;
+            int runTestPer = 10;
             if (i % runTestPer == runTestPer-1) {
                 runTests(
                     net,
@@ -220,7 +296,7 @@ public class TrainCountries {
                     expResults
                 );
             }
-            int evaluationPer = 20;
+            int evaluationPer = 10;
             if (i % evaluationPer == evaluationPer-1) {
                 evaluateTests(net, iTest);
             }
